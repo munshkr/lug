@@ -4,8 +4,6 @@ require 'colorize'
 
 module Mang
   class Logger
-    include MonitorMixin
-
     SOURCE_RE = /<([^>]+)>/
 
     COLORS = %i(
@@ -25,12 +23,14 @@ module Mang
 
     attr_reader :io, :colors_map
 
+    @@mutex = Mutex.new
+    @@colors_map = {}
+    @@last_log_ts = nil
+
     def initialize(namespace = nil, io = STDERR)
       @namespace = namespace
       @io = io
       @io.sync = true
-
-      @@mutex = Mutex.new unless defined?(@@mutex)
     end
 
     def log(msg_or_ns, msg = nil)
@@ -45,11 +45,25 @@ module Mang
 
       # Colorize only if @io is a TTY
       if @io.isatty
-        ns = ns && ns.colorize(color: self.class.color_for(ns), mode: :bold)
+        if ns
+          color = @@mutex.synchronize { color_for(ns) }
+          ns = ns.colorize(color: color, mode: :bold)
+        end
         msg = msg.colorize(color: :white)
       end
 
-      @io.puts("#{"#{ns} " if ns}#{msg}")
+      @@mutex.synchronize do
+        now = Time.now
+        line = if @io.isatty
+          "#{"#{ns} " if ns}#{msg} #{elapsed(now)}"
+        else
+          "[#{now} #{"[#{ns}] " if ns}#{msg}"
+        end
+        @@last_log_ts = now
+        @io.puts(line)
+      end
+
+      true
     end
 
     def <<(msg)
@@ -58,10 +72,19 @@ module Mang
 
     private
 
-    def self.color_for(namespace)
-      @@mutex.synchronize do
-        @@colors_map = {} unless defined?(@@colors_map)
-        @@colors_map[namespace] ||= COLORS[@@colors_map.size % COLORS.size]
+    def color_for(namespace)
+      @@colors_map[namespace] ||= COLORS[@@colors_map.size % COLORS.size]
+    end
+
+    def elapsed(now)
+      return unless @@last_log_ts
+      secs = now - @@last_log_ts
+      if secs >= 60
+        "+#{(secs / 60).to_i}m"
+      elsif secs >= 1
+        "+#{secs.to_i}s"
+      else
+        "+#{(secs * 1000).to_i}ms"
       end
     end
   end
