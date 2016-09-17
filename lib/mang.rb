@@ -1,25 +1,10 @@
 require 'mang/version'
 require 'thread'
-require 'colorize'
 
 module Mang
   class Logger
-    SOURCE_RE = /<([^>]+)>/
-
-    COLORS = %i(
-      light_cyan
-      light_green
-      light_yellow
-      light_blue
-      light_magenta
-      light_red
-      cyan
-      green
-      yellow
-      blue
-      magenta
-      red
-    )
+    MSG_COLOR = '0;37'
+    COLORS = %w(1;36 1;32 1;33 1;34 1;35 1;31 0;36 0;32 0;33 0;34 0;35 0;31)
 
     attr_reader :io, :colors_map
 
@@ -47,9 +32,9 @@ module Mang
       if @io.isatty
         if ns
           color = @@mutex.synchronize { color_for(ns) }
-          ns = ns.colorize(color: color, mode: :bold)
+          ns = colorize(ns, color, true)
         end
-        msg = msg.colorize(color: :white)
+        msg = colorize(msg, MSG_COLOR)
       end
 
       @@mutex.synchronize do
@@ -74,6 +59,10 @@ module Mang
 
     def color_for(namespace)
       @@colors_map[namespace] ||= COLORS[@@colors_map.size % COLORS.size]
+    end
+
+    def colorize(string, color, bold=false)
+      "\e[#{color}m#{string}\e[0m"
     end
 
     def elapsed(now)
