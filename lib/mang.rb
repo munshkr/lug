@@ -8,45 +8,51 @@ module Mang
 
     SOURCE_RE = /<([^>]+)>/
 
-		COLORS = %i(
-			light_cyan
-			light_green
-			light_yellow
-			light_blue
-			light_magenta
-			light_red
-			cyan
-			green
-			yellow
-			blue
-			magenta
-			red
-		)
+    COLORS = %i(
+      light_cyan
+      light_green
+      light_yellow
+      light_blue
+      light_magenta
+      light_red
+      cyan
+      green
+      yellow
+      blue
+      magenta
+      red
+    )
 
     attr_reader :log_device, :colors_map
 
-    def self.for(namespace, dev = STDOUT)
-      new(namespace, dev)
-    end
-
-    def initialize(namespace = nil, dev = STDOUT)
+    def initialize(namespace = nil, dev = STDERR)
       @namespace = namespace
       @log_device = LogDevice.new(dev)
-      @mutex = Mutex.new
+
+      @@mutex = Mutex.new unless defined?(@@mutex)
     end
 
     def log(msg_or_ns, msg = nil)
-      ns = (msg && msg_or_ns) || @namespace
-      if ns && @log_device.tty?
-        ns = ns.to_s
-        ns = ns.colorize(color: color_for(ns), mode: :bold)
-			end
+      # Generate namespace based on parameter and default
+      if @namespace
+        ns = msg && msg_or_ns
+        ns = ns ? "#{@namespace}:#{ns}" : @namespace
+      end
 
-			if block_given?
-				msg = yield
-			else
-				msg ||= msg_or_ns
-			end
+      # Cast to string if there's a namespace
+      ns = ns && ns.to_s
+
+      # Colorize namespace
+      if ns && @log_device.tty?
+        ns = ns.colorize(color: self.class.color_for(ns), mode: :bold)
+      end
+
+      # Use message from block if given
+      if block_given?
+        msg = yield
+      else
+        msg ||= msg_or_ns
+      end
 
       @log_device.puts("#{"#{ns} " if ns}#{msg}")
     end
@@ -57,10 +63,10 @@ module Mang
 
     private
 
-    def color_for(namespace)
-      @mutex.synchronize do
-        @colors_map ||= {}
-        @colors_map[namespace] ||= COLORS[@colors_map.size % COLORS.size]
+    def self.color_for(namespace)
+      @@mutex.synchronize do
+        @@colors_map = {} unless defined?(@@colors_map)
+        @@colors_map[namespace] ||= COLORS[@@colors_map.size % COLORS.size]
       end
     end
   end
@@ -82,3 +88,16 @@ module Mang
     end
   end
 end
+
+def Log(namespace)
+  mod = Module.new
+  mod.module_eval(%Q(
+    def log(*args)
+      @@logger = Mang::Logger.new(#{namespace.inspect}) unless defined?(@@logger)
+      block_given? ? @@logger.log(*args) { yield } : @@logger.log(*args)
+    end
+  ))
+  mod
+end
+
+Object.const_set(:Log, Log(nil))
