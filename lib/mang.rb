@@ -23,11 +23,12 @@ module Mang
       red
     )
 
-    attr_reader :log_device, :colors_map
+    attr_reader :io, :colors_map
 
-    def initialize(namespace = nil, dev = STDERR)
+    def initialize(namespace = nil, io = STDERR)
       @namespace = namespace
-      @log_device = LogDevice.new(dev)
+      @io = io
+      @io.sync = true
 
       @@mutex = Mutex.new unless defined?(@@mutex)
     end
@@ -43,7 +44,7 @@ module Mang
       ns = ns && ns.to_s
 
       # Colorize namespace
-      if ns && @log_device.tty?
+      if ns && @io.isatty
         ns = ns.colorize(color: self.class.color_for(ns), mode: :bold)
       end
 
@@ -54,7 +55,7 @@ module Mang
         msg ||= msg_or_ns
       end
 
-      @log_device.puts("#{"#{ns} " if ns}#{msg}")
+      @io.puts("#{"#{ns} " if ns}#{msg}")
     end
 
     def <<(msg)
@@ -68,23 +69,6 @@ module Mang
         @@colors_map = {} unless defined?(@@colors_map)
         @@colors_map[namespace] ||= COLORS[@@colors_map.size % COLORS.size]
       end
-    end
-  end
-
-  class LogDevice
-    attr_reader :dev
-
-    def initialize(dev = nil)
-      @dev = dev
-      @mutex = Mutex.new
-    end
-
-    def puts(message)
-      @mutex.synchronize { @dev.puts(message) }
-    end
-
-    def tty?
-      @mutex.synchronize { @dev.isatty }
     end
   end
 end
