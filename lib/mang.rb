@@ -39,20 +39,14 @@ module Mang
         ns = msg && msg_or_ns
         ns = ns ? "#{@namespace}:#{ns}" : @namespace
       end
-
-      # Cast to string if there's a namespace
       ns = ns && ns.to_s
 
-      # Colorize namespace
-      if ns && @io.isatty
-        ns = ns.colorize(color: self.class.color_for(ns), mode: :bold)
-      end
+      msg ||= msg_or_ns
 
-      # Use message from block if given
-      if block_given?
-        msg = yield
-      else
-        msg ||= msg_or_ns
+      # Colorize only if @io is a TTY
+      if @io.isatty
+        ns = ns && ns.colorize(color: self.class.color_for(ns), mode: :bold)
+        msg = msg.colorize(color: :white)
       end
 
       @io.puts("#{"#{ns} " if ns}#{msg}")
