@@ -99,7 +99,7 @@ module Mang
     # @param msg [String]
     # @return [NilClass]
     #
-    def log(msg_or_ns, msg = nil)
+    def log(msg_or_ns = nil, msg = nil)
       # Generate namespace based on parameter and default
       if @namespace
         ns = msg && msg_or_ns
@@ -107,7 +107,7 @@ module Mang
       end
       ns &&= ns.to_s
 
-      msg ||= msg_or_ns
+      msg ||= block_given? ? yield : msg_or_ns
 
       # Colorize only if @io is a TTY
       ns, msg = colorized_ns_and_msg(ns, msg) if @io.isatty
@@ -127,28 +127,28 @@ module Mang
       log(msg)
     end
 
-    def debug(*args)
-      log_with_level(0, *args)
+    def debug(*args, &block)
+      log_with_level(0, *args, &block)
     end
 
-    def info(msg)
-      log_with_level(1, msg)
+    def info(*args, &block)
+      log_with_level(1, *args, &block)
     end
 
-    def warn(msg)
-      log_with_level(2, msg)
+    def warn(*args, &block)
+      log_with_level(2, *args, &block)
     end
 
-    def error(msg)
-      log_with_level(3, msg)
+    def error(*args, &block)
+      log_with_level(3, *args, &block)
     end
 
-    def fatal(msg)
-      log_with_level(4, msg)
+    def fatal(*args, &block)
+      log_with_level(4, *args, &block)
     end
 
-    def unknown(msg)
-      log_with_level(5, msg)
+    def unknown(*args, &block)
+      log_with_level(5, *args, &block)
     end
 
     private
@@ -157,7 +157,7 @@ module Mang
       if @io.isatty
         "#{"#{ns} " if ns}#{msg} #{elapsed(now)}"
       else
-        "[#{now} #{"[#{ns}] " if ns}#{msg}"
+        "#{now} #{"[#{ns}] " if ns}#{msg}"
       end
     end
 
@@ -198,8 +198,9 @@ module Mang
       end
     end
 
-    def log_with_level(level, msg)
-      log("#{colorized_level(level)} #{colorized(msg, MSG_COLOR)}")
+    def log_with_level(level, msg = nil, &block)
+      msg ||= yield if block_given?
+      log(nil, "#{colorized_level(level)} #{colorized(msg, MSG_COLOR)}")
     end
   end
 end

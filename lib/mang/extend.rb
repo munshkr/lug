@@ -4,16 +4,16 @@ def Log(namespace)
   mod = Module.new
   mod.module_eval(%(
     module ClassMethods
-      def log(*args)
+      def log(*args, &block)
         unless defined?(@@logger)
           @@logger = Mang::Logger.new(#{namespace.inspect})
         end
-        block_given? ? @@logger.log(*args) { yield } : @@logger.log(*args)
+        @@logger.log(*args, &block)
       end
     end
 
-    def log(*args)
-      self.class.log(*args)
+    def log(*args, &block)
+      self.class.log(*args, &block)
     end
 
     def self.included(receiver)
