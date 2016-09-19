@@ -6,7 +6,8 @@ module Mang
     MSG_COLOR = '0;37'
     COLORS = %w(1;36 1;32 1;33 1;34 1;35 1;31 0;36 0;32 0;33 0;34 0;35 0;31)
 
-    attr_reader :io, :colors_map
+    attr_reader   :io, :colors_map
+    attr_accessor :namespace
 
     @@mutex = Mutex.new
     @@colors_map = {}
@@ -39,11 +40,7 @@ module Mang
 
       @@mutex.synchronize do
         now = Time.now
-        line = if @io.isatty
-          "#{"#{ns} " if ns}#{msg} #{elapsed(now)}"
-        else
-          "[#{now} #{"[#{ns}] " if ns}#{msg}"
-        end
+        line = build_line(ns, msg, now)
         @@last_log_ts = now
         @io.puts(line)
       end
@@ -56,6 +53,14 @@ module Mang
     end
 
     private
+
+    def build_line(ns, msg, now)
+      if @io.isatty
+        "#{"#{ns} " if ns}#{msg} #{elapsed(now)}"
+      else
+        "[#{now} #{"[#{ns}] " if ns}#{msg}"
+      end
+    end
 
     def color_for(namespace)
       @@colors_map[namespace] ||= COLORS[@@colors_map.size % COLORS.size]
