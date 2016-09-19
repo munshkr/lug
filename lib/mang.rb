@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'mang/version'
 require 'thread'
 
@@ -42,6 +43,24 @@ module Mang
       Colors::MAGENTA,
       Colors::CYAN,
       Colors::RED,
+    ]
+
+    LEVEL_TEXT = [
+      'DEBUG'.freeze,
+      'INFO'.freeze,
+      'WARN'.freeze,
+      'ERROR'.freeze,
+      'FATAL'.freeze,
+      'UNKNOWN'.freeze,
+    ]
+
+    LEVEL_COLOR = [
+      Colors::LIGHT_BLACK,
+      Colors::LIGHT_GREEN,
+      Colors::LIGHT_YELLOW,
+      Colors::RED,
+      Colors::LIGHT_RED,
+      Colors::LIGHT_MAGENTA,
     ]
 
     attr_reader :io, :namespace
@@ -91,7 +110,7 @@ module Mang
       msg ||= msg_or_ns
 
       # Colorize only if @io is a TTY
-      ns, msg = colorize_ns_and_msg(ns, msg) if @io.isatty
+      ns, msg = colorized_ns_and_msg(ns, msg) if @io.isatty
 
       @@mutex.synchronize do
         now = Time.now
@@ -108,6 +127,30 @@ module Mang
       log(msg)
     end
 
+    def debug(*args)
+      log_with_level(0, *args)
+    end
+
+    def info(msg)
+      log_with_level(1, msg)
+    end
+
+    def warn(msg)
+      log_with_level(2, msg)
+    end
+
+    def error(msg)
+      log_with_level(3, msg)
+    end
+
+    def fatal(msg)
+      log_with_level(4, msg)
+    end
+
+    def unknown(msg)
+      log_with_level(5, msg)
+    end
+
     private
 
     def build_line(ns, msg, now)
@@ -118,16 +161,24 @@ module Mang
       end
     end
 
-    def colorize_ns_and_msg(ns, msg)
+    def colorized_ns_and_msg(ns, msg)
       if ns
         color = @@mutex.synchronize { color_for(ns) }
-        ns = colorize(ns, color)
+        ns = colorized(ns, color)
       end
-      msg = colorize(msg, MSG_COLOR)
+      msg = colorized(msg, MSG_COLOR)
       [ns, msg]
     end
 
-    def colorize(string, color)
+    def colorized_level(level)
+      if @io.isatty
+        colorized(LEVEL_TEXT[level], LEVEL_COLOR[level])
+      else
+        LEVEL_TEXT[level]
+      end
+    end
+
+    def colorized(string, color)
       "\e[#{color}m#{string}\e[0m"
     end
 
@@ -145,6 +196,10 @@ module Mang
       else
         "+#{(secs * 1000).to_i}ms"
       end
+    end
+
+    def log_with_level(level, msg)
+      log("#{colorized_level(level)} #{msg}")
     end
   end
 end
