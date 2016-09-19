@@ -2,14 +2,47 @@ require 'mang/version'
 require 'thread'
 
 module Mang
+  module Colors
+    DEFAULT       = '0;0'.freeze
+    BLACK         = '0;30'.freeze
+    RED           = '0;31'.freeze
+    GREEN         = '0;32'.freeze
+    YELLOW        = '0;33'.freeze
+    BLUE          = '0;34'.freeze
+    MAGENTA       = '0;35'.freeze
+    CYAN          = '0;36'.freeze
+    WHITE         = '0;37'.freeze
+    LIGHT_BLACK   = '1;30'.freeze
+    LIGHT_RED     = '1;31'.freeze
+    LIGHT_GREEN   = '1;32'.freeze
+    LIGHT_YELLOW  = '1;33'.freeze
+    LIGHT_BLUE    = '1;34'.freeze
+    LIGHT_MAGENTA = '1;35'.freeze
+    LIGHT_CYAN    = '1;36'.freeze
+    LIGHT_WHITE   = '1;37'.freeze
+  end
+
   # Small utility class for logging messages to stderr or other IO device
   #
   class Logger
-    MSG_COLOR = '0;37'.freeze
-    COLORS = %w(
-      1;36 1;32 1;33 1;34 1;35 1;31
-      0;36 0;32 0;33 0;34 0;35 0;31
-    ).freeze
+    MSG_COLOR = Colors::WHITE
+
+    NS_COLORS = [
+      Colors::LIGHT_CYAN,
+      Colors::LIGHT_GREEN,
+      Colors::LIGHT_YELLOW,
+      Colors::LIGHT_BLUE,
+      Colors::LIGHT_MAGENTA,
+      Colors::LIGHT_CYAN,
+      Colors::LIGHT_RED,
+      Colors::CYAN,
+      Colors::GREEN,
+      Colors::YELLOW,
+      Colors::BLUE,
+      Colors::MAGENTA,
+      Colors::CYAN,
+      Colors::RED,
+    ]
 
     attr_reader :io, :namespace
 
@@ -99,7 +132,7 @@ module Mang
     end
 
     def color_for(namespace)
-      @@colors_map[namespace] ||= COLORS[@@colors_map.size % COLORS.size]
+      @@colors_map[namespace] ||= NS_COLORS[@@colors_map.size % NS_COLORS.size]
     end
 
     def elapsed(now)
