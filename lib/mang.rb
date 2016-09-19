@@ -55,12 +55,12 @@ module Mang
     ]
 
     LEVEL_COLOR = [
-      Colors::LIGHT_BLACK,
-      Colors::LIGHT_GREEN,
-      Colors::LIGHT_YELLOW,
+      Colors::CYAN,
+      Colors::GREEN,
+      Colors::YELLOW,
       Colors::RED,
       Colors::LIGHT_RED,
-      Colors::LIGHT_MAGENTA,
+      Colors::MAGENTA,
     ]
 
     attr_reader :io, :namespace
@@ -199,7 +199,7 @@ module Mang
     end
 
     def log_with_level(level, msg)
-      log("#{colorized_level(level)} #{msg}")
+      log("#{colorized_level(level)} #{colorized(msg, MSG_COLOR)}")
     end
   end
 end
