@@ -1,0 +1,10 @@
+Style/ClassVars:
+  Exclude:
+    - 'lib/mang.rb'
+
+Style/MethodName:
+  Exclude:
+    - 'lib/mang/extend.rb'
+
+Metrics/MethodLength:
+  Max: 20

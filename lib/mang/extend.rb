@@ -2,10 +2,12 @@ require 'mang'
 
 def Log(namespace)
   mod = Module.new
-  mod.module_eval(%Q(
+  mod.module_eval(%(
     module ClassMethods
       def log(*args)
-        @@logger = Mang::Logger.new(#{namespace.inspect}) unless defined?(@@logger)
+        unless defined?(@@logger)
+          @@logger = Mang::Logger.new(#{namespace.inspect})
+        end
         block_given? ? @@logger.log(*args) { yield } : @@logger.log(*args)
       end
     end
