@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'benchmark'
+require 'lag'
+require 'logger'
+
+null_io = File.open(File::NULL, 'a')
+logger = Logger.new(null_io)
+lag_logger = Lag.new(:lag, null_io)
+
+TOTAL = 100_000
+
+Benchmark.bmbm do |x|
+  x.report('Logger#debug') { TOTAL.times { |i| logger.debug "Message #{i}" } }
+
+  lag = Lag.new(nil, null_io)
+  x.report('Lag#debug') { TOTAL.times { |i| lag_logger.debug "Message #{i}" } }
+  x.report('Lag#log') { TOTAL.times { |i| lag_logger << "Message #{i}" } }
+
+  lag = Lag.new(:main, null_io)
+  x.report('Lag#debug (w/ ns)') { TOTAL.times { |i| lag_logger.debug "Message #{i}" } }
+  x.report('Lag#log (w/ ns)') { TOTAL.times { |i| lag_logger << "Message #{i}" } }
+end
