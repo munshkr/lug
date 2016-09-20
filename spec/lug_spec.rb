@@ -3,14 +3,15 @@ require 'timecop'
 
 describe Lug do
   it 'has a version number' do
-    refute_nil ::Lug::VERSION
+    refute_nil Lug::VERSION
   end
 
   describe '#initialize' do
     it 'defaults to no namespace and STDERR io' do
       lug = Lug.create
       assert_nil lug.namespace
-      assert_equal STDERR, lug.io
+      assert_instance_of Lug::TtyDevice, lug.device
+      assert_equal STDERR, lug.device.io
     end
   end
 
@@ -25,7 +26,7 @@ describe Lug do
         lug = @lug.on(:script)
 
         assert_instance_of Lug::Logger, lug
-        assert_equal @lug.io.object_id, lug.io.object_id
+        assert_equal @lug.device, lug.device
         assert_equal 'script', lug.namespace
       end
     end
@@ -40,7 +41,7 @@ describe Lug do
         lug = @lug.on(:script)
 
         assert_instance_of Lug::Logger, lug
-        assert_equal @lug.io.object_id, lug.io.object_id
+        assert_equal @lug.device, lug.device
         assert_equal 'main:script', lug.namespace
       end
     end

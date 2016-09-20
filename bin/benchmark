@@ -2,7 +2,8 @@
 
 require 'bundler/setup'
 require 'benchmark'
-require 'lug'
+require 'lug/logger'
+require 'lug/tty_logger'
 require 'logger'
 
 null_io = File.open(File::NULL, 'a')
@@ -12,13 +13,13 @@ Benchmark.bmbm do |x|
   logger = Logger.new(null_io)
   x.report('Logger#debug') { TOTAL.times { |i| logger.debug(i) } }
 
-  lug = Lug.create(nil, null_io)
-  x.report('Lug#debug') { TOTAL.times { |i| lug.debug(i) } }
-  x.report('Lug#log') { TOTAL.times { |i| lug << i } }
+  lug = Lug::Logger.new(nil, null_io)
+  x.report('Lug::Logger#debug') { TOTAL.times { |i| lug.debug(i) } }
+  x.report('Lug::Logger#log') { TOTAL.times { |i| lug << i } }
 
-  lug = Lug.create(:main, null_io)
-  x.report('Lug#debug (w/ ns)') { TOTAL.times { |i| lug.debug(i) } }
-  x.report('Lug#log (w/ ns)') { TOTAL.times { |i| lug << i } }
+  lug = Lug::Logger.new(:main, null_io)
+  x.report('Lug::Logger#debug (w/ ns)') { TOTAL.times { |i| lug.debug(i) } }
+  x.report('Lug::Logger#log (w/ ns)') { TOTAL.times { |i| lug << i } }
 
   lug = Lug::TtyLogger.new(nil, null_io)
   x.report('Lug::TtyLogger#debug') { TOTAL.times { |i| lug.debug(i) } }
