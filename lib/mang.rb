@@ -23,8 +23,8 @@ module Mang
       Colors::BLUE,
       Colors::MAGENTA,
       Colors::CYAN,
-      Colors::RED,
-    ]
+      Colors::RED
+    ].freeze
 
     LEVEL_TEXT = [
       'DEBUG'.freeze,
@@ -32,8 +32,8 @@ module Mang
       'WARN'.freeze,
       'ERROR'.freeze,
       'FATAL'.freeze,
-      'UNKNOWN'.freeze,
-    ]
+      'UNKNOWN'.freeze
+    ].freeze
 
     LEVEL_COLOR = [
       Colors::CYAN,
@@ -41,8 +41,8 @@ module Mang
       Colors::YELLOW,
       Colors::RED,
       Colors::LIGHT_RED,
-      Colors::MAGENTA,
-    ]
+      Colors::MAGENTA
+    ].freeze
 
     attr_reader :io, :namespace
 
@@ -58,7 +58,7 @@ module Mang
     def initialize(namespace = nil, io = STDERR)
       if namespace
         @namespace = namespace.to_s
-        @namespace_color = color_for(@namespace) 
+        @namespace_color = color_for(@namespace)
       end
 
       @io = io
@@ -96,7 +96,7 @@ module Mang
     def log(msg = nil, &block)
       log_with_level(nil, msg, &block)
     end
-    alias_method :<<, :log
+    alias << log
 
     def debug(msg = nil, &block)
       log_with_level(0, msg, &block)
@@ -127,7 +127,7 @@ module Mang
     def log_with_level(level = nil, message = nil)
       message ||= yield if block_given?
 
-      fail ArgumentError, 'message is nil' if message.nil?
+      raise ArgumentError, 'message is nil' if message.nil?
 
       @@mutex.synchronize do
         now = Time.now
@@ -140,19 +140,29 @@ module Mang
     end
 
     def build_line(message, level, now)
-      ps = []
       if @io.isatty
-        ps << colorized(@namespace, @namespace_color) if @namespace
-        ps << colorized(LEVEL_TEXT[level], LEVEL_COLOR[level]) if level
-        ps << colorized(message, MSG_COLOR)
-        ps << elapsed(now)
+        colorized_line_parts(message, level, now)
       else
-        ps << now
-        ps << "[#{@namespace}]" if @namespace
-        ps << LEVEL_TEXT[level] if level
-        ps << message
+        line_parts(message, level, now)
       end
-      ps.join(' ')
+    end
+
+    def colorized_line_parts(message, level, now)
+      res = []
+      res << colorized(@namespace, @namespace_color) if @namespace
+      res << colorized(LEVEL_TEXT[level], LEVEL_COLOR[level]) if level
+      res << colorized(message, MSG_COLOR)
+      res << elapsed(now)
+      res.join(' '.freeze)
+    end
+
+    def line_parts(message, level, now)
+      res = []
+      res << now
+      res << "[#{@namespace}]" if @namespace
+      res << LEVEL_TEXT[level] if level
+      res << message
+      res.join(' '.freeze)
     end
 
     def colorized(string, color)
@@ -161,7 +171,8 @@ module Mang
 
     def color_for(namespace)
       @@mutex.synchronize do
-        @@colors_map[namespace] ||= NS_COLORS[@@colors_map.size % NS_COLORS.size]
+        idx = @@colors_map.size % NS_COLORS.size
+        @@colors_map[namespace] ||= NS_COLORS[idx]
       end
     end
 
