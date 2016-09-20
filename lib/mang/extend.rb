@@ -1,12 +1,11 @@
 require 'mang'
 
-def Log(namespace)
+def logger_on(namespace, logger_method = :logger)
   mod = Module.new
   mod.module_eval(%(
     module ClassMethods
-      def log(*args, &block)
+      def #{logger_method}
         @logger ||= Mang::Logger.new(#{namespace.inspect})
-        @logger.log(*args, &block)
       end
     end
 
@@ -14,11 +13,9 @@ def Log(namespace)
       receiver.extend(ClassMethods)
     end
 
-    def log(*args, &block)
-      self.class.log(*args, &block)
+    def #{logger_method}
+      self.class.#{logger_method}
     end
   ))
   mod
 end
-
-Object.const_set(:Log, Log(nil))
