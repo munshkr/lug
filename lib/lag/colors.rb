@@ -1,4 +1,4 @@
-class Lag
+module Lag
   module Colors
     DEFAULT       = '0;0'.freeze
     BLACK         = '0;30'.freeze

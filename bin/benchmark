@@ -6,19 +6,25 @@ require 'lag'
 require 'logger'
 
 null_io = File.open(File::NULL, 'a')
-logger = Logger.new(null_io)
-lag_logger = Lag.new(:lag, null_io)
-
 TOTAL = 100_000
 
 Benchmark.bmbm do |x|
-  x.report('Logger#debug') { TOTAL.times { |i| logger.debug "Message #{i}" } }
+  logger = Logger.new(null_io)
+  x.report('Logger#debug') { TOTAL.times { |i| logger.debug(i) } }
 
-  lag = Lag.new(nil, null_io)
-  x.report('Lag#debug') { TOTAL.times { |i| lag_logger.debug "Message #{i}" } }
-  x.report('Lag#log') { TOTAL.times { |i| lag_logger << "Message #{i}" } }
+  lag = Lag.create(nil, null_io)
+  x.report('Lag#debug') { TOTAL.times { |i| lag.debug(i) } }
+  x.report('Lag#log') { TOTAL.times { |i| lag << i } }
 
-  lag = Lag.new(:main, null_io)
-  x.report('Lag#debug (w/ ns)') { TOTAL.times { |i| lag_logger.debug "Message #{i}" } }
-  x.report('Lag#log (w/ ns)') { TOTAL.times { |i| lag_logger << "Message #{i}" } }
+  lag = Lag.create(:main, null_io)
+  x.report('Lag#debug (w/ ns)') { TOTAL.times { |i| lag.debug(i) } }
+  x.report('Lag#log (w/ ns)') { TOTAL.times { |i| lag << i } }
+
+  lag = Lag::TtyLogger.new(nil, null_io)
+  x.report('Lag::TtyLogger#debug') { TOTAL.times { |i| lag.debug(i) } }
+  x.report('Lag::TtyLogger#log') { TOTAL.times { |i| lag << i } }
+
+  lag = Lag::TtyLogger.new(:main, null_io)
+  x.report('Lag::TtyLogger#debug (w/ ns)') { TOTAL.times { |i| lag.debug(i) } }
+  x.report('Lag::TtyLogger#log (w/ ns)') { TOTAL.times { |i| lag << i } }
 end

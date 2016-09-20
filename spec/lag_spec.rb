@@ -8,7 +8,7 @@ describe Lag do
 
   describe '#initialize' do
     it 'defaults to no namespace and STDERR io' do
-      lag = Lag.new
+      lag = Lag.create
       assert_nil lag.namespace
       assert_equal STDERR, lag.io
     end
@@ -18,13 +18,13 @@ describe Lag do
     describe 'without default namespace' do
       before do
         @io = StringIO.new
-        @lag = Lag.new(nil, @io)
+        @lag = Lag.create(nil, @io)
       end
 
       it 'clones logger with namespace appended to default' do
         lag = @lag.on(:script)
 
-        assert_instance_of Lag, lag
+        assert_instance_of Lag::Logger, lag
         assert_equal @lag.io.object_id, lag.io.object_id
         assert_equal 'script', lag.namespace
       end
@@ -33,13 +33,13 @@ describe Lag do
     describe 'with default namespace' do
       before do
         @io = StringIO.new
-        @lag = Lag.new(:main, @io)
+        @lag = Lag.create(:main, @io)
       end
 
       it 'clones logger with namespace' do
         lag = @lag.on(:script)
 
-        assert_instance_of Lag, lag
+        assert_instance_of Lag::Logger, lag
         assert_equal @lag.io.object_id, lag.io.object_id
         assert_equal 'main:script', lag.namespace
       end
@@ -54,7 +54,7 @@ describe Lag do
 
       describe 'without namespace' do
         before do
-          @lag = Lag.new(nil, @io)
+          @lag = Lag.create(nil, @io)
         end
 
         it 'logs message' do
@@ -74,7 +74,7 @@ describe Lag do
 
       describe 'with default namespace' do
         before do
-          @lag = Lag.new(:main, @io)
+          @lag = Lag.create(:main, @io)
         end
 
         it 'logs message with default namespace' do
@@ -108,7 +108,7 @@ describe Lag do
 
       describe 'without namespace' do
         before do
-          @lag = Lag.new(nil, @io)
+          @lag = Lag.create(nil, @io)
         end
 
         it 'logs message' do
@@ -124,7 +124,7 @@ describe Lag do
 
       describe 'with default namespace' do
         before do
-          @lag = Lag.new(:main, @io)
+          @lag = Lag.create(:main, @io)
         end
 
         it 'logs message with default namespace' do
@@ -143,7 +143,7 @@ describe Lag do
   describe '#<<' do
     before do
       @io = StringIO.new
-      @lag = Lag.new(nil, @io)
+      @lag = Lag.create(nil, @io)
     end
 
     it 'is an alias of #log' do
