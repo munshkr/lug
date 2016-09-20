@@ -1,11 +1,11 @@
 # frozen_string_literal: true
-require 'lag/version'
-require 'lag/colors'
+require 'lug/version'
+require 'lug/colors'
 require 'thread'
 
 # Small utility class for logging messages to stderr or other IO device
 #
-module Lag
+module Lug
   def self.create(namespace = nil, io = STDERR)
     io.isatty ? TtyLogger.new(namespace, io) : Logger.new(namespace, io)
   end
@@ -38,7 +38,7 @@ module Lag
     # Clone logger with a custom namespace appended
     #
     # @param namespace [String, Symbol]
-    # @return [Lag]
+    # @return [Lug]
     #
     def on(namespace)
       namespace = "#{@namespace}:#{namespace}" if @namespace
@@ -51,13 +51,13 @@ module Lag
     # colors to make them easily distinguishable.
     #
     # @example
-    #   lag = Lag.new
-    #   lag << 'This is the message'
+    #   lug = Lug.new
+    #   lug << 'This is the message'
     #   # => "This is the message"
     #
     # @example logger with namespace
-    #   lag = Lag.new(:myapp)
-    #   lag << 'This is the message'
+    #   lug = Lug.new(:myapp)
+    #   lug << 'This is the message'
     #   # => "myapp This is the message"
     #
     # @param msg [String]

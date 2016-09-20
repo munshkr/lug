@@ -1,4 +1,4 @@
-# Lag [![Build Status](https://travis-ci.org/munshkr/lag.svg?branch=master)](https://travis-ci.org/munshkr/lag)
+# Lug [![Build Status](https://travis-ci.org/munshkr/lug.svg?branch=master)](https://travis-ci.org/munshkr/lug)
 
 A small Ruby logger for debugging libraries and applications.  Pretty much a
 clone of [debug](https://github.com/visionmedia/debug) for Node.js
@@ -15,7 +15,7 @@ clone of [debug](https://github.com/visionmedia/debug) for Node.js
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'lag'
+gem 'lug'
 ```
 
 And then execute:
@@ -24,7 +24,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install lag
+    $ gem install lug
 
 ## Usage
 
@@ -32,20 +32,20 @@ TODO: Write usage instructions here
 
 ## Benchmark
 
-Performance comparison between Ruby's Logger class and Lag logger classes.
+Performance comparison between Ruby's Logger class and Lug logger classes.
 `TtyLogger` colorizes output and calculates elapsed time between lines.
 
 ```
                                    user     system      total        real
 Logger#debug                   1.370000   0.180000   1.550000 (  1.541650)
-Lag#debug                      0.800000   0.030000   0.830000 (  0.826236)
-Lag#log                        0.680000   0.040000   0.720000 (  0.723071)
-Lag#debug (w/ ns)              0.770000   0.050000   0.820000 (  0.816781)
-Lag#log (w/ ns)                0.690000   0.030000   0.720000 (  0.731388)
-Lag::TtyLogger#debug           0.800000   0.030000   0.830000 (  0.821452)
-Lag::TtyLogger#log             0.700000   0.020000   0.720000 (  0.719901)
-Lag::TtyLogger#debug (w/ ns)   0.810000   0.020000   0.830000 (  0.820442)
-Lag::TtyLogger#log (w/ ns)     0.680000   0.050000   0.730000 (  0.721682)
+Lug#debug                      0.800000   0.030000   0.830000 (  0.826236)
+Lug#log                        0.680000   0.040000   0.720000 (  0.723071)
+Lug#debug (w/ ns)              0.770000   0.050000   0.820000 (  0.816781)
+Lug#log (w/ ns)                0.690000   0.030000   0.720000 (  0.731388)
+Lug::TtyLogger#debug           0.800000   0.030000   0.830000 (  0.821452)
+Lug::TtyLogger#log             0.700000   0.020000   0.720000 (  0.719901)
+Lug::TtyLogger#debug (w/ ns)   0.810000   0.020000   0.830000 (  0.820442)
+Lug::TtyLogger#log (w/ ns)     0.680000   0.050000   0.730000 (  0.721682)
 ```
 
 ## Development
@@ -63,7 +63,7 @@ git commits and tags, and push the `.gem` file to
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at
-https://github.com/munshkr/lag. This project is intended to be a safe,
+https://github.com/munshkr/lug. This project is intended to be a safe,
 welcoming space for collaboration, and contributors are expected to adhere to
 the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 

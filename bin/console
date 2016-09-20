@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'bundler/setup'
-require 'lag'
+require 'lug'
 
 require 'pry'
 Pry.start

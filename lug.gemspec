@@ -1,16 +1,16 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'lag/version'
+require 'lug/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'lag'
-  spec.version       = Lag::VERSION
+  spec.name          = 'lug'
+  spec.version       = Lug::VERSION
   spec.authors       = ['Damián Silvani']
   spec.email         = ['munshkr@gmail.com']
 
   spec.summary       = 'Simple Ruby logger for debugging applications.'
-  spec.homepage      = 'https://github.com/munshkr/lag'
+  spec.homepage      = 'https://github.com/munshkr/lug'
   spec.license       = 'MIT'
 
   spec.files = `git ls-files -z`.split("\x0").reject do |f|
