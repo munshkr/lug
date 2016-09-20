@@ -1,4 +1,4 @@
-# Lag
+# Lag [![Build Status](https://travis-ci.org/munshkr/lag.svg?branch=master)](https://travis-ci.org/munshkr/lag)
 
 A small Ruby logger for debugging libraries and applications.  Pretty much a
 clone of [debug](https://github.com/visionmedia/debug) for Node.js
