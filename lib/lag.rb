@@ -10,6 +10,8 @@ module Lag
     io.isatty ? TtyLogger.new(namespace, io) : Logger.new(namespace, io)
   end
 
+  # Logger class for non-tty IO devices
+  #
   class Logger
     LEVEL_TEXT = [
       'DEBUG'.freeze,
@@ -108,6 +110,10 @@ module Lag
     end
   end
 
+  # Logger class for tty IO devices
+  #
+  # Output is colorized with standard ANSI escape codes
+  #
   class TtyLogger < Logger
     MSG_COLOR = Colors::WHITE
 

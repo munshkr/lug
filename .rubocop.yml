@@ -1,6 +1,6 @@
 Style/ClassVars:
   Exclude:
-    - 'lib/mang.rb'
+    - 'lib/lag.rb'
 
 Metrics/MethodLength:
   Max: 20
