@@ -58,7 +58,7 @@ module Mang
     def initialize(namespace = nil, io = STDERR)
       if namespace
         @namespace = namespace.to_s
-        @namespace_color = color_for(@namespace)
+        @namespace_color = choose_color(@namespace) if io.isatty
       end
 
       @io = io
@@ -127,13 +127,14 @@ module Mang
     def log_with_level(level = nil, message = nil)
       message ||= yield if block_given?
 
-      raise ArgumentError, 'message is nil' if message.nil?
-
-      @@mutex.synchronize do
-        now = Time.now
-        line = build_line(message, level, now)
-        @@prev_time = now
-        @io.puts(line)
+      now = Time.now
+      if @io.isatty
+        @@mutex.synchronize do
+          @io.puts(build_line(message, level, now))
+          @@prev_time = now
+        end
+      else
+        @io.puts(build_line(message, level, Time.now))
       end
 
       nil
@@ -169,7 +170,7 @@ module Mang
       "\e[#{color}m#{string}\e[0m"
     end
 
-    def color_for(namespace)
+    def choose_color(namespace)
       @@mutex.synchronize do
         idx = @@colors_map.size % NS_COLORS.size
         @@colors_map[namespace] ||= NS_COLORS[idx]
