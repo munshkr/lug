@@ -1,14 +1,14 @@
-require 'mang'
+require 'lag'
 
 def logger_on(namespace, logger_method = :logger)
-  mod_name = :"Log_#{namespace}"
-  return Mang.const_get(mod_name) if Mang.const_defined?(mod_name)
+  mod_name = :"Log_#{namespace.to_s.gsub(':', '__')}"
+  return Lag.const_get(mod_name) if Lag.const_defined?(mod_name)
 
   mod = Module.new
   mod.module_eval(%(
     module ClassMethods
       def #{logger_method}
-        @logger ||= Mang::Logger.new(#{namespace.inspect})
+        @logger ||= Lag::Logger.new(#{namespace.inspect})
       end
     end
 
@@ -20,6 +20,6 @@ def logger_on(namespace, logger_method = :logger)
       self.class.#{logger_method}
     end
   ))
-  Mang.const_set(:"Log_#{namespace}", mod)
+  Lag.const_set(mod_name, mod)
   mod
 end

@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in mang.gemspec
+# Specify your gem's dependencies in lag.gemspec
 gemspec
 
 gem 'pry'

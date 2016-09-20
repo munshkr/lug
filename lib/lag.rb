@@ -1,9 +1,9 @@
 # frozen_string_literal: true
-require 'mang/version'
-require 'mang/colors'
+require 'lag/version'
+require 'lag/colors'
 require 'thread'
 
-module Mang
+module Lag
   # Small utility class for logging messages to stderr or other IO device
   #
   class Logger
@@ -68,7 +68,7 @@ module Mang
     # Clone logger with a custom namespace appended
     #
     # @param namespace [String, Symbol]
-    # @return [Mang::Logger]
+    # @return [Lag::Logger]
     #
     def on(namespace)
       namespace = "#{@namespace}:#{namespace}" if @namespace

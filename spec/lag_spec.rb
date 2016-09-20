@@ -1,14 +1,14 @@
 require 'spec_helper'
 require 'timecop'
 
-describe Mang do
+describe Lag do
   it 'has a version number' do
-    refute_nil ::Mang::VERSION
+    refute_nil ::Lag::VERSION
   end
 
   describe '#initialize' do
     it 'defaults to no namespace and STDERR io' do
-      logger = Mang::Logger.new
+      logger = Lag::Logger.new
       assert_nil logger.namespace
       assert_equal STDERR, logger.io
     end
@@ -18,13 +18,13 @@ describe Mang do
     describe 'without default namespace' do
       before do
         @io = StringIO.new
-        @logger = Mang::Logger.new(nil, @io)
+        @logger = Lag::Logger.new(nil, @io)
       end
 
       it 'clones Logger with namespace appended to default' do
         logger = @logger.on(:script)
 
-        assert_instance_of Mang::Logger, logger
+        assert_instance_of Lag::Logger, logger
         assert_equal @logger.io.object_id, logger.io.object_id
         assert_equal 'script', logger.namespace
       end
@@ -33,13 +33,13 @@ describe Mang do
     describe 'with default namespace' do
       before do
         @io = StringIO.new
-        @logger = Mang::Logger.new(:main, @io)
+        @logger = Lag::Logger.new(:main, @io)
       end
 
       it 'clones Logger with namespace' do
         logger = @logger.on(:script)
 
-        assert_instance_of Mang::Logger, logger
+        assert_instance_of Lag::Logger, logger
         assert_equal @logger.io.object_id, logger.io.object_id
         assert_equal 'main:script', logger.namespace
       end
@@ -54,7 +54,7 @@ describe Mang do
 
       describe 'without namespace' do
         before do
-          @logger = Mang::Logger.new(nil, @io)
+          @logger = Lag::Logger.new(nil, @io)
         end
 
         it 'logs message' do
@@ -74,7 +74,7 @@ describe Mang do
 
       describe 'with default namespace' do
         before do
-          @logger = Mang::Logger.new(:main, @io)
+          @logger = Lag::Logger.new(:main, @io)
         end
 
         it 'logs message with default namespace' do
@@ -108,7 +108,7 @@ describe Mang do
 
       describe 'without namespace' do
         before do
-          @logger = Mang::Logger.new(nil, @io)
+          @logger = Lag::Logger.new(nil, @io)
         end
 
         it 'logs message' do
@@ -124,7 +124,7 @@ describe Mang do
 
       describe 'with default namespace' do
         before do
-          @logger = Mang::Logger.new(:main, @io)
+          @logger = Lag::Logger.new(:main, @io)
         end
 
         it 'logs message with default namespace' do
@@ -143,7 +143,7 @@ describe Mang do
   describe '#<<' do
     before do
       @io = StringIO.new
-      @logger = Mang::Logger.new(nil, @io)
+      @logger = Lag::Logger.new(nil, @io)
     end
 
     it 'is an alias of #log' do
