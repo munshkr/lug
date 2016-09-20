@@ -1,28 +1,9 @@
 # frozen_string_literal: true
 require 'mang/version'
+require 'mang/colors'
 require 'thread'
 
 module Mang
-  module Colors
-    DEFAULT       = '0;0'.freeze
-    BLACK         = '0;30'.freeze
-    RED           = '0;31'.freeze
-    GREEN         = '0;32'.freeze
-    YELLOW        = '0;33'.freeze
-    BLUE          = '0;34'.freeze
-    MAGENTA       = '0;35'.freeze
-    CYAN          = '0;36'.freeze
-    WHITE         = '0;37'.freeze
-    LIGHT_BLACK   = '1;30'.freeze
-    LIGHT_RED     = '1;31'.freeze
-    LIGHT_GREEN   = '1;32'.freeze
-    LIGHT_YELLOW  = '1;33'.freeze
-    LIGHT_BLUE    = '1;34'.freeze
-    LIGHT_MAGENTA = '1;35'.freeze
-    LIGHT_CYAN    = '1;36'.freeze
-    LIGHT_WHITE   = '1;37'.freeze
-  end
-
   # Small utility class for logging messages to stderr or other IO device
   #
   class Logger
@@ -67,115 +48,111 @@ module Mang
 
     @@mutex = Mutex.new
     @@colors_map = {}
-    @@last_log_ts = nil
+    @@prev_time = nil
 
     # Create a Logger with an optional +namespace+ and +io+ device as output
     #
-    # @param namespace [String]
-    # @param io [IO] output device
+    # @param io [IO] output device (default: stderr)
+    # @param namespace [String, Symbol] (default: nil)
     #
     def initialize(namespace = nil, io = STDERR)
-      @namespace = namespace
+      if namespace
+        @namespace = namespace.to_s
+        @namespace_color = color_for(@namespace) 
+      end
+
       @io = io
       @io.sync = true
+    end
+
+    # Clone logger with a custom namespace appended
+    #
+    # @param namespace [String, Symbol]
+    # @return [Mang::Logger]
+    #
+    def on(namespace)
+      namespace = "#{@namespace}:#{namespace}" if @namespace
+      self.class.new(namespace, @io)
     end
 
     # Log a message to output device
     #
     # If IO device is a TTY, it will print namespaces with different ANSI
-    # colors to make them apart.
+    # colors to make them easily distinguishable.
     #
-    # @example Without a custom namespace
-    #   logger = Logger.new('myapp')
+    # @example
+    #   logger = Logger.new
+    #   logger.log 'This is the message'
+    #   # => "This is the message"
+    #
+    # @example Logger with namespace
+    #   logger = Logger.new(:myapp)
     #   logger.log 'This is the message'
     #   # => "myapp This is the message"
     #
-    # @example With a custom namespace
-    #   logger = Logger.new('myapp')
-    #   logger.log 'route', 'This is the message'
-    #   # => "myapp:route This is the message"
-    #
-    # @param msg_or_ns [String] message, or namespace if +msg+ is present
     # @param msg [String]
     # @return [NilClass]
     #
-    def log(msg_or_ns = nil, msg = nil)
-      # Generate namespace based on parameter and default
-      if @namespace
-        ns = msg && msg_or_ns
-        ns = ns ? "#{@namespace}:#{ns}" : @namespace
-      end
-      ns &&= ns.to_s
+    def log(msg = nil, &block)
+      log_with_level(nil, msg, &block)
+    end
+    alias_method :<<, :log
 
-      msg ||= block_given? ? yield : msg_or_ns
+    def debug(msg = nil, &block)
+      log_with_level(0, msg, &block)
+    end
 
-      # Colorize only if @io is a TTY
-      ns, msg = colorized_ns_and_msg(ns, msg) if @io.isatty
+    def info(msg = nil, &block)
+      log_with_level(1, msg, &block)
+    end
+
+    def warn(msg = nil, &block)
+      log_with_level(2, msg, &block)
+    end
+
+    def error(msg = nil, &block)
+      log_with_level(3, msg, &block)
+    end
+
+    def fatal(msg = nil, &block)
+      log_with_level(4, msg, &block)
+    end
+
+    def unknown(msg = nil, &block)
+      log_with_level(5, msg, &block)
+    end
+
+    private
+
+    def log_with_level(level = nil, message = nil)
+      message ||= yield if block_given?
+
+      fail ArgumentError, 'message is nil' if message.nil?
 
       @@mutex.synchronize do
         now = Time.now
-        line = build_line(ns, msg, now)
-        @@last_log_ts = now
+        line = build_line(message, level, now)
+        @@prev_time = now
         @io.puts(line)
       end
 
       nil
     end
 
-    # @see {#log}
-    def <<(msg)
-      log(msg)
-    end
-
-    def debug(*args, &block)
-      log_with_level(0, *args, &block)
-    end
-
-    def info(*args, &block)
-      log_with_level(1, *args, &block)
-    end
-
-    def warn(*args, &block)
-      log_with_level(2, *args, &block)
-    end
-
-    def error(*args, &block)
-      log_with_level(3, *args, &block)
-    end
-
-    def fatal(*args, &block)
-      log_with_level(4, *args, &block)
-    end
-
-    def unknown(*args, &block)
-      log_with_level(5, *args, &block)
-    end
-
-    private
-
-    def build_line(ns, msg, now)
+    def build_line(message, level, now)
+      ps = []
       if @io.isatty
-        "#{"#{ns} " if ns}#{msg} #{elapsed(now)}"
+        ps << colorized(@namespace, @namespace_color) if @namespace
+        ps << colorized(LEVEL_TEXT[level], LEVEL_COLOR[level]) if level
+        ps << colorized(message, MSG_COLOR)
+        ps << elapsed(now)
       else
-        "#{now} #{"[#{ns}] " if ns}#{msg}"
+        ps << now
+        ps << "[#{@namespace}]" if @namespace
+        ps << LEVEL_TEXT[level] if level
+        ps << message
       end
-    end
-
-    def colorized_ns_and_msg(ns, msg)
-      if ns
-        color = @@mutex.synchronize { color_for(ns) }
-        ns = colorized(ns, color)
-      end
-      msg = colorized(msg, MSG_COLOR)
-      [ns, msg]
-    end
-
-    def colorized_level(level)
-      if @io.isatty
-        colorized(LEVEL_TEXT[level], LEVEL_COLOR[level])
-      else
-        LEVEL_TEXT[level]
-      end
+      ps.join(' ')
     end
 
     def colorized(string, color)
@@ -183,12 +160,14 @@ module Mang
     end
 
     def color_for(namespace)
-      @@colors_map[namespace] ||= NS_COLORS[@@colors_map.size % NS_COLORS.size]
+      @@mutex.synchronize do
+        @@colors_map[namespace] ||= NS_COLORS[@@colors_map.size % NS_COLORS.size]
+      end
     end
 
     def elapsed(now)
-      return unless @@last_log_ts
-      secs = now - @@last_log_ts
+      return '+0ms'.freeze unless @@prev_time
+      secs = now - @@prev_time
       if secs >= 60
         "+#{(secs / 60).to_i}m"
       elsif secs >= 1
@@ -196,11 +175,6 @@ module Mang
       else
         "+#{(secs * 1000).to_i}ms"
       end
-    end
-
-    def log_with_level(level, msg = nil, &block)
-      msg ||= yield if block_given?
-      log(nil, "#{colorized_level(level)} #{colorized(msg, MSG_COLOR)}")
     end
   end
 end

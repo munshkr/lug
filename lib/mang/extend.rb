@@ -5,19 +5,17 @@ def Log(namespace)
   mod.module_eval(%(
     module ClassMethods
       def log(*args, &block)
-        unless defined?(@@logger)
-          @@logger = Mang::Logger.new(#{namespace.inspect})
-        end
-        @@logger.log(*args, &block)
+        @logger ||= Mang::Logger.new(#{namespace.inspect})
+        @logger.log(*args, &block)
       end
-    end
-
-    def log(*args, &block)
-      self.class.log(*args, &block)
     end
 
     def self.included(receiver)
       receiver.extend(ClassMethods)
+    end
+
+    def log(*args, &block)
+      self.class.log(*args, &block)
     end
   ))
   mod
