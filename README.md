@@ -3,6 +3,13 @@
 A small Ruby logger for debugging libraries and applications.  Pretty much a
 clone of [debug](https://github.com/visionmedia/debug) for Node.js
 
+## Features
+
+* Smaller and faster than Ruby's logger
+* Colorized output for tty output devices (like stderr)
+* Filter log messages by namespace
+* Standard logger interface (responds to #debug, #warn, #error, etc.)
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -22,6 +29,24 @@ Or install it yourself as:
 ## Usage
 
 TODO: Write usage instructions here
+
+## Benchmark
+
+Performance comparison between Ruby's Logger class and Lag logger classes.
+`TtyLogger` colorizes output and calculates elapsed time between lines.
+
+```
+                                   user     system      total        real
+Logger#debug                   1.370000   0.180000   1.550000 (  1.541650)
+Lag#debug                      0.800000   0.030000   0.830000 (  0.826236)
+Lag#log                        0.680000   0.040000   0.720000 (  0.723071)
+Lag#debug (w/ ns)              0.770000   0.050000   0.820000 (  0.816781)
+Lag#log (w/ ns)                0.690000   0.030000   0.720000 (  0.731388)
+Lag::TtyLogger#debug           0.800000   0.030000   0.830000 (  0.821452)
+Lag::TtyLogger#log             0.700000   0.020000   0.720000 (  0.719901)
+Lag::TtyLogger#debug (w/ ns)   0.810000   0.020000   0.830000 (  0.820442)
+Lag::TtyLogger#log (w/ ns)     0.680000   0.050000   0.730000 (  0.721682)
+```
 
 ## Development
 
