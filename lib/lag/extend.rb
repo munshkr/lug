@@ -8,7 +8,7 @@ def logger_on(namespace, logger_method = :logger)
   mod.module_eval(%(
     module ClassMethods
       def #{logger_method}
-        @logger ||= Lag::Logger.new(#{namespace.inspect})
+        @logger ||= Lag.new(#{namespace.inspect})
       end
     end
 

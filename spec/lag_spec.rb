@@ -8,9 +8,9 @@ describe Lag do
 
   describe '#initialize' do
     it 'defaults to no namespace and STDERR io' do
-      logger = Lag::Logger.new
-      assert_nil logger.namespace
-      assert_equal STDERR, logger.io
+      lag = Lag.new
+      assert_nil lag.namespace
+      assert_equal STDERR, lag.io
     end
   end
 
@@ -18,30 +18,30 @@ describe Lag do
     describe 'without default namespace' do
       before do
         @io = StringIO.new
-        @logger = Lag::Logger.new(nil, @io)
+        @lag = Lag.new(nil, @io)
       end
 
-      it 'clones Logger with namespace appended to default' do
-        logger = @logger.on(:script)
+      it 'clones logger with namespace appended to default' do
+        lag = @lag.on(:script)
 
-        assert_instance_of Lag::Logger, logger
-        assert_equal @logger.io.object_id, logger.io.object_id
-        assert_equal 'script', logger.namespace
+        assert_instance_of Lag, lag
+        assert_equal @lag.io.object_id, lag.io.object_id
+        assert_equal 'script', lag.namespace
       end
     end
 
     describe 'with default namespace' do
       before do
         @io = StringIO.new
-        @logger = Lag::Logger.new(:main, @io)
+        @lag = Lag.new(:main, @io)
       end
 
-      it 'clones Logger with namespace' do
-        logger = @logger.on(:script)
+      it 'clones logger with namespace' do
+        lag = @lag.on(:script)
 
-        assert_instance_of Lag::Logger, logger
-        assert_equal @logger.io.object_id, logger.io.object_id
-        assert_equal 'main:script', logger.namespace
+        assert_instance_of Lag, lag
+        assert_equal @lag.io.object_id, lag.io.object_id
+        assert_equal 'main:script', lag.namespace
       end
     end
   end
@@ -54,19 +54,19 @@ describe Lag do
 
       describe 'without namespace' do
         before do
-          @logger = Lag::Logger.new(nil, @io)
+          @lag = Lag.new(nil, @io)
         end
 
         it 'logs message' do
           Timecop.freeze(Time.now) do
-            @logger.log('my message')
+            @lag.log('my message')
             assert_equal "#{Time.now} my message\n", @io.string
           end
         end
 
         it 'logs message from block' do
           Timecop.freeze(Time.now) do
-            @logger.log { 'my message' }
+            @lag.log { 'my message' }
             assert_equal "#{Time.now} my message\n", @io.string
           end
         end
@@ -74,19 +74,19 @@ describe Lag do
 
       describe 'with default namespace' do
         before do
-          @logger = Lag::Logger.new(:main, @io)
+          @lag = Lag.new(:main, @io)
         end
 
         it 'logs message with default namespace' do
           Timecop.freeze(Time.now) do
-            @logger.log('my message')
+            @lag.log('my message')
             assert_equal "#{Time.now} [main] my message\n", @io.string
           end
         end
 
         it 'logs message from block with default namespace' do
           Timecop.freeze(Time.now) do
-            @logger.log { 'my message' }
+            @lag.log { 'my message' }
             assert_equal "#{Time.now} [main] my message\n", @io.string
           end
         end
@@ -108,32 +108,32 @@ describe Lag do
 
       describe 'without namespace' do
         before do
-          @logger = Lag::Logger.new(nil, @io)
+          @lag = Lag.new(nil, @io)
         end
 
         it 'logs message' do
-          @logger.log('my message')
+          @lag.log('my message')
           assert_match line_re(nil, 'my message'), @io.string
         end
 
         it 'logs message from block' do
-          @logger.log { 'my message' }
+          @lag.log { 'my message' }
           assert_match line_re(nil, 'my message'), @io.string
         end
       end
 
       describe 'with default namespace' do
         before do
-          @logger = Lag::Logger.new(:main, @io)
+          @lag = Lag.new(:main, @io)
         end
 
         it 'logs message with default namespace' do
-          @logger.log('my message')
+          @lag.log('my message')
           assert_match line_re('main', 'my message'), @io.string
         end
 
         it 'logs message from block with default namespace' do
-          @logger.log { 'my message' }
+          @lag.log { 'my message' }
           assert_match line_re('main', 'my message'), @io.string
         end
       end
@@ -143,16 +143,16 @@ describe Lag do
   describe '#<<' do
     before do
       @io = StringIO.new
-      @logger = Lag::Logger.new(nil, @io)
+      @lag = Lag.new(nil, @io)
     end
 
     it 'is an alias of #log' do
-      @logger.log 'message'
+      @lag.log 'message'
       res_log = @io.string
 
       @io.truncate(0)
 
-      @logger << 'message'
+      @lag << 'message'
       res = @io.string
 
       assert_equal res_log, res
