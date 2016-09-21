@@ -50,7 +50,7 @@ module Lug
     def puts(string)
       @mutex.synchronize do
         @prev_time = Time.now
-        @io.puts(string)
+        @io.write("#{string}\n")
       end
     end
 
