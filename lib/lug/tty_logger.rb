@@ -48,11 +48,10 @@ module Lug
       @prev_time = nil
     end
 
-    def puts
+    def puts(string)
       @mutex.synchronize do
-        now = Time.now
-        super(yield(now))
-        @prev_time = now
+        @prev_time = Time.now
+        super(string)
       end
     end
 
@@ -63,8 +62,8 @@ module Lug
       end
     end
 
-    def seconds_elapsed(now)
-      now - @prev_time
+    def seconds_elapsed
+      Time.now - @prev_time
     end
 
     def new?
@@ -78,15 +77,6 @@ module Lug
   #
   class TtyLogger < Logger
     MSG_COLOR = Colors::WHITE
-
-    LEVEL_COLOR = [
-      Colors::CYAN,
-      Colors::GREEN,
-      Colors::YELLOW,
-      Colors::RED,
-      Colors::LIGHT_RED,
-      Colors::MAGENTA
-    ].freeze
 
     # Create a logger with an optional +namespace+ and +io_or_dev+ IO
     # or Device as output
@@ -103,18 +93,12 @@ module Lug
 
     private
 
-    def log_with_level(level = nil, message = nil)
-      message ||= yield if block_given?
-      @device.puts { |now| build_line(message, level, now) }
-      nil
-    end
-
-    def build_line(message, level, now)
+    def build_line(message, level = nil)
       res = []
       res << colorized(@namespace, @namespace_color) if @namespace
-      res << colorized(LEVEL_TEXT[level], LEVEL_COLOR[level]) if level
+      res << colorized(level_text(level), level_color(level)) if level
       res << colorized(message, MSG_COLOR)
-      res << elapsed_text(now)
+      res << elapsed_text
       res.join(' '.freeze)
     end
 
@@ -122,9 +106,9 @@ module Lug
       "\e[#{color}m#{string}\e[0m"
     end
 
-    def elapsed_text(now)
+    def elapsed_text
       return '+0ms'.freeze if @device.new?
-      secs = @device.seconds_elapsed(now)
+      secs = @device.seconds_elapsed
       if secs >= 60
         "+#{(secs / 60).to_i}m"
       elsif secs >= 1

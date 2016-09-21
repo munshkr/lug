@@ -16,15 +16,6 @@ module Lug
   # Logger class for non-tty IO devices
   #
   class Logger
-    LEVEL_TEXT = [
-      'DEBUG'.freeze,
-      'INFO'.freeze,
-      'WARN'.freeze,
-      'ERROR'.freeze,
-      'FATAL'.freeze,
-      'UNKNOWN'.freeze
-    ].freeze
-
     attr_reader :device, :namespace
 
     # Create a logger with an optional +namespace+ and +io+ device as output
@@ -66,48 +57,19 @@ module Lug
     # @param msg [String]
     # @return [NilClass]
     #
-    def log(msg = nil, &block)
-      log_with_level(nil, msg, &block)
+    def log(message = nil)
+      message ||= yield if block_given?
+      @device.puts(build_line(message))
     end
     alias << log
 
-    def debug(msg = nil, &block)
-      log_with_level(0, msg, &block)
-    end
-
-    def info(msg = nil, &block)
-      log_with_level(1, msg, &block)
-    end
-
-    def warn(msg = nil, &block)
-      log_with_level(2, msg, &block)
-    end
-
-    def error(msg = nil, &block)
-      log_with_level(3, msg, &block)
-    end
-
-    def fatal(msg = nil, &block)
-      log_with_level(4, msg, &block)
-    end
-
-    def unknown(msg = nil, &block)
-      log_with_level(5, msg, &block)
-    end
-
     private
 
-    def log_with_level(level = nil, message = nil)
-      message ||= yield if block_given?
-      @device.puts(build_line(message, level, Time.now))
-      nil
-    end
-
-    def build_line(message, level, now)
+    def build_line(message, level = nil)
       res = []
-      res << now
+      res << Time.now
       res << "[#{@namespace}]" if @namespace
-      res << LEVEL_TEXT[level] if level
+      res << level_text(level) if level
       res << message
       res.join(' '.freeze)
     end

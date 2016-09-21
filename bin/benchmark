@@ -4,28 +4,58 @@ require 'bundler/setup'
 require 'benchmark'
 require 'lug/logger'
 require 'lug/tty_logger'
+require 'lug/standard'
 require 'logger'
 
 null_io = File.open(File::NULL, 'a')
-TOTAL = 100_000
+N = 100_000
 
 Benchmark.bmbm do |x|
   logger = Logger.new(null_io)
-  x.report('Logger#debug') { TOTAL.times { |i| logger.debug(i) } }
+  x.report('Logger#debug') do
+    N.times { |i| logger.debug(i) }
+  end
 
   lug = Lug::Logger.new(nil, null_io)
-  x.report('Lug::Logger#debug') { TOTAL.times { |i| lug.debug(i) } }
-  x.report('Lug::Logger#log') { TOTAL.times { |i| lug << i } }
+  x.report('Lug::Logger#log') do
+    N.times { |i| lug << i }
+  end
 
   lug = Lug::Logger.new(:main, null_io)
-  x.report('Lug::Logger#debug (w/ ns)') { TOTAL.times { |i| lug.debug(i) } }
-  x.report('Lug::Logger#log (w/ ns)') { TOTAL.times { |i| lug << i } }
+  x.report('Lug::Logger#log (w/ns)') do
+    N.times { |i| lug << i }
+  end
 
   lug = Lug::TtyLogger.new(nil, null_io)
-  x.report('Lug::TtyLogger#debug') { TOTAL.times { |i| lug.debug(i) } }
-  x.report('Lug::TtyLogger#log') { TOTAL.times { |i| lug << i } }
+  x.report('Lug::TtyLogger#log') do
+    N.times { |i| lug << i }
+  end
 
   lug = Lug::TtyLogger.new(:main, null_io)
-  x.report('Lug::TtyLogger#debug (w/ ns)') { TOTAL.times { |i| lug.debug(i) } }
-  x.report('Lug::TtyLogger#log (w/ ns)') { TOTAL.times { |i| lug << i } }
+  x.report('Lug::TtyLogger#log (w/ns)') do
+    N.times { |i| lug << i }
+  end
+
+  # Include standard Logger methods mixin
+  Lug::Logger.include(Lug::Standard)
+
+  lug = Lug::Logger.new(nil, null_io)
+  x.report('Lug::Logger#debug + Standard') do
+    N.times { |i| lug.debug(i) }
+  end
+
+  lug = Lug::Logger.new(:main, null_io)
+  x.report('Lug::Logger#debug + Standard (w/ns)') do
+    N.times { |i| lug.debug(i) }
+  end
+
+  lug = Lug::TtyLogger.new(nil, null_io)
+  x.report('Lug::TtyLogger#debug + Standard') do
+    N.times { |i| lug.debug(i) }
+  end
+
+  lug = Lug::TtyLogger.new(:main, null_io)
+  x.report('Lug::TtyLogger#debug + Standard (w/ns)') do
+    N.times { |i| lug.debug(i) }
+  end
 end
