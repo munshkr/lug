@@ -43,6 +43,7 @@ module Lug
 
     def initialize(io)
       super(io)
+      @mutex = Mutex.new
       @colors_map = {}
       @prev_time = nil
     end
