@@ -1,25 +1,42 @@
 require 'lug'
 
-def logger_on(namespace, logger_method = :logger)
-  mod_name = :"Log_#{namespace.to_s.gsub(':', '__')}"
-  return Lug.const_get(mod_name) if Lug.const_defined?(mod_name)
-
-  mod = Module.new
-  mod.module_eval(%(
-    module ClassMethods
-      def #{logger_method}
-        @logger ||= Lug.new(#{namespace.inspect})
-      end
+module Lug
+  module Object
+    def lug
+      defined?(LUG) && LUG
     end
+  end
 
-    def self.included(receiver)
-      receiver.extend(ClassMethods)
-    end
+  module Class
+    def lug_on(namespace)
+      cap_ns = namespace.to_s.split(':').map(&:capitalize).join
+      mod_name = :"LugOn#{cap_ns}"
 
-    def #{logger_method}
-      self.class.#{logger_method}
+      return const_get(mod_name) if const_defined?(mod_name)
+      return unless LUG
+
+      mod = Module.new
+      mod.module_eval(%(
+        module ClassMethods
+          def lug
+            LUG.on(#{namespace.inspect})
+          end
+        end
+
+        def self.included(receiver)
+          receiver.extend(ClassMethods)
+        end
+
+        def lug
+          self.class.lug
+        end
+      ))
+      const_set(mod_name, mod)
+
+      include mod
     end
-  ))
-  Lug.const_set(mod_name, mod)
-  mod
+  end
 end
+
+Object.send(:include, Lug::Object)
+Class.send(:include, Lug::Class)
