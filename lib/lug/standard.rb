@@ -47,15 +47,5 @@ module Lug
       msg ||= yield if block_given?
       @device.puts(build_line(msg, 5))
     end
-
-    private
-
-    def level_text(level)
-      LEVEL_TEXT[level]
-    end
-
-    def level_color(level)
-      LEVEL_COLOR[level]
-    end
   end
 end

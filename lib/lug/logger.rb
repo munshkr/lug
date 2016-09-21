@@ -69,7 +69,7 @@ module Lug
       res = []
       res << Time.now
       res << "[#{@namespace}]" if @namespace
-      res << level_text(level) if level
+      res << Lug::Standard::LEVEL_TEXT[level] if level
       res << message
       res.join(' '.freeze)
     end

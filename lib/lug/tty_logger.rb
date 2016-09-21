@@ -96,7 +96,8 @@ module Lug
     def build_line(message, level = nil)
       res = []
       res << colorized(@namespace, @namespace_color) if @namespace
-      res << colorized(level_text(level), level_color(level)) if level
+      res << colorized(Standard::LEVEL_TEXT[level],
+                       Standard::LEVEL_COLOR[level]) if level
       res << colorized(message, MSG_COLOR)
       res << elapsed_text
       res.join(' '.freeze)
