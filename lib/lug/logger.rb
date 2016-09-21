@@ -4,12 +4,15 @@ module Lug
     attr_reader :io
 
     def initialize(io)
+      @mutex = Mutex.new
       @io = io
       @io.sync = true
     end
 
     def puts(string)
-      @io.puts(string)
+      @mutex.synchronize do
+        @io.puts(string)
+      end
     end
   end
 
