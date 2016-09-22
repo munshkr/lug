@@ -46,6 +46,7 @@ module Lug
     def print_line(message, namespace)
       line = [
         Time.now,
+        $$,
         namespace && "[#{namespace}]",
         message
       ].compact.join(' '.freeze)
