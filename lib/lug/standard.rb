@@ -41,42 +41,42 @@ module Lug
     end
 
     module NamespaceMethods
-      def log(message = nil, namespace = nil, _level = nil)
+      def log(message = nil, level = nil)
+        return unless @enabled
         message ||= yield if block_given?
-        namespace = namespace ? "#{@namespace}:#{namespace}" : @namespace
-        @logger.log(message, namespace)
+        @logger.log(message, @namespace, level)
       end
     end
 
     module LoggerNamespaceMethods
-      def debug(msg = nil, ns = nil)
+      def debug(msg = nil)
         msg ||= yield if block_given?
-        log(msg, ns, 0)
+        log(msg, 0)
       end
 
-      def info(msg = nil, ns = nil)
+      def info(msg = nil)
         msg ||= yield if block_given?
-        log(msg, ns, 1)
+        log(msg, 1)
       end
 
-      def warn(msg = nil, ns = nil)
+      def warn(msg = nil)
         msg ||= yield if block_given?
-        log(msg, ns, 2)
+        log(msg, 2)
       end
 
-      def error(msg = nil, ns = nil)
+      def error(msg = nil)
         msg ||= yield if block_given?
-        log(msg, ns, 3)
+        log(msg, 3)
       end
 
-      def fatal(msg = nil, ns = nil)
+      def fatal(msg = nil)
         msg ||= yield if block_given?
-        log(msg, ns, 4)
+        log(msg, 4)
       end
 
-      def unknown(msg = nil, ns = nil)
+      def unknown(msg = nil)
         msg ||= yield if block_given?
-        log(msg, ns, 5)
+        log(msg, 5)
       end
     end
   end

@@ -7,6 +7,9 @@ describe Lug::TtyLogger do
   end
 
   describe '#log' do
+  end
+
+  describe '#log' do
     before do
       @logger = Lug::TtyLogger.new(@io)
     end

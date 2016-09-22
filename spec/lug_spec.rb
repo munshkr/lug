@@ -26,8 +26,10 @@ describe Lug do
 
     it 'defaults to TtyLogger and stderr IO' do
       lug = Lug.create
-      assert_instance_of Lug::TtyLogger, lug
-      assert_equal STDERR, lug.io
+      assert_instance_of Lug::Namespace, lug
+      assert_nil lug.namespace
+      assert_instance_of Lug::TtyLogger, lug.logger
+      assert_equal STDERR, lug.logger.io
     end
   end
 end

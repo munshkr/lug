@@ -3,12 +3,13 @@ require 'spec_helper'
 describe Lug::Namespace do
   before do
     @io = StringIO.new
+    ENV['DEBUG'] = '*'
   end
 
   describe '#initialize' do
     it 'accepts a +namespace+ string and a +logger+ instance' do
       logger = Lug::Logger.new(@io)
-      ns = Lug::Namespace.new(:main, logger)
+      ns = Lug::Namespace.new(logger, :main)
 
       assert_equal 'main', ns.namespace
       assert_equal logger, ns.logger

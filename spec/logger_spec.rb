@@ -29,6 +29,9 @@ describe Lug::Logger do
   end
 
   describe '#log' do
+  end
+
+  describe '#log' do
     before do
       @logger = Lug::Logger.new(@io)
     end

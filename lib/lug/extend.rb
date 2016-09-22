@@ -2,15 +2,15 @@ require 'lug'
 
 module Lug
   module Object
-    def lug
+    def logger
       defined?(LUG) && LUG
     end
   end
 
   module Class
-    def lug_on(namespace)
+    def logger_on(namespace)
       cap_ns = namespace.to_s.split(':').map(&:capitalize).join
-      mod_name = :"LugOn#{cap_ns}"
+      mod_name = :"LoggerOn#{cap_ns}"
 
       return const_get(mod_name) if const_defined?(mod_name)
       return unless LUG
@@ -18,7 +18,7 @@ module Lug
       mod = Module.new
       mod.module_eval(%(
         module ClassMethods
-          def lug
+          def logger
             LUG.on(#{namespace.inspect})
           end
         end
@@ -27,8 +27,8 @@ module Lug
           receiver.extend(ClassMethods)
         end
 
-        def lug
-          self.class.lug
+        def logger
+          self.class.logger
         end
       ))
       const_set(mod_name, mod)

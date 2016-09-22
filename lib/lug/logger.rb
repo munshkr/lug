@@ -8,6 +8,8 @@ module Lug
     def initialize(io = STDERR)
       @io = io
       @io.sync = true
+
+      enable(ENV['DEBUG'.freeze].to_s) if ENV['DEBUG']
     end
 
     # Log a message to output device
@@ -29,7 +31,6 @@ module Lug
     # @return [NilClass]
     #
     def log(message = nil, namespace = nil)
-      message ||= yield if block_given?
       print_line(message, namespace)
     end
     alias << log
@@ -40,12 +41,21 @@ module Lug
     # @return [Lug]
     #
     def on(namespace)
-      Namespace.new(namespace, self)
+      Namespace.new(self, namespace)
+    end
+
+    def enabled_for?(namespace)
+      namespace = namespace.to_s
+      @enabled_namespaces.any? { |re| namespace =~ re }
+    end
+
+    def enable(filter)
+      @enabled_namespaces = parse_namespace_filter(filter)
     end
 
     private
 
-    def print_line(message, namespace)
+    def print_line(message, namespace = nil)
       line = [
         Time.now,
         $$,
@@ -56,6 +66,16 @@ module Lug
       @io.write("#{line}\n")
       nil
     end
+
+    def parse_namespace_filter(filter)
+      res = []
+      filter.split(/[\s,]+/).each do |ns|
+        next if ns.empty?
+        ns = ns.gsub('*'.freeze, '.*?'.freeze)
+        res << /^#{ns}$/
+      end
+      res
+    end
   end
 
   class Namespace
@@ -63,23 +83,29 @@ module Lug
 
     # Create a Namespace from +namespace+ associated to +logger+
     #
-    # @param namespace [String, Symbol]
     # @param logger [Lug::Logger]
+    # @param namespace [String, Symbol]
     #
-    def initialize(namespace, logger)
-      @namespace = namespace.to_s
+    def initialize(logger, namespace = nil)
       @logger = logger
+      @namespace = namespace && namespace.to_s
+      @enabled = @logger.enabled_for?(@namespace)
     end
 
-    def log(message = nil, namespace = nil)
+    def log(message = nil)
+      return unless @enabled
       message ||= yield if block_given?
-      namespace = namespace ? "#{@namespace}:#{namespace}" : @namespace
-      @logger.log(message, namespace)
+      @logger.log(message, @namespace)
     end
     alias << log
 
     def on(namespace)
-      Namespace.new("#{@namespace}:#{namespace}", @logger)
+      namespace = [@namespace, namespace].compact.join(':'.freeze)
+      Namespace.new(@logger, namespace)
+    end
+
+    def enabled?
+      @enabled
     end
   end
 
@@ -136,7 +162,7 @@ module Lug
 
     private
 
-    def print_line(message, namespace)
+    def print_line(message, namespace = nil)
       @mutex.synchronize do
         now = Time.now
         line = [
