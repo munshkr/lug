@@ -1,42 +1,11 @@
 # frozen_string_literal: true
 module Lug
-  class Device
+  class Logger
     attr_reader :io
 
-    def initialize(io)
+    def initialize(io = STDERR)
       @io = io
       @io.sync = true
-    end
-
-    def puts(string)
-      @io.write("#{string}\n")
-    end
-  end
-
-  # Logger class for non-tty IO devices
-  #
-  class Logger
-    attr_reader :device, :namespace
-
-    # Create a logger with an optional +namespace+ and +io+ device as output
-    #
-    # @param io [IO, Lug::Device] output device (default: stderr)
-    # @param namespace [String, Symbol] (default: nil)
-    #
-    def initialize(namespace = nil, io_or_dev = STDERR)
-      @namespace = namespace.to_s if namespace
-      @device = io_or_dev
-      @device = Device.new(io_or_dev) unless io_or_dev.is_a?(Device)
-    end
-
-    # Clone logger with a custom namespace appended
-    #
-    # @param namespace [String, Symbol]
-    # @return [Lug]
-    #
-    def on(namespace)
-      namespace = "#{@namespace}:#{namespace}" if @namespace
-      self.class.new(namespace, @device)
     end
 
     # Log a message to output device
@@ -57,21 +26,59 @@ module Lug
     # @param msg [String]
     # @return [NilClass]
     #
-    def log(message = nil)
+    def log(message = nil, namespace = nil)
       message ||= yield if block_given?
-      @device.puts(build_line(message))
+      puts(build_line(message, namespace))
     end
     alias << log
 
+    # Clone logger with a namespace appended
+    #
+    # @param namespace [String, Symbol]
+    # @return [Lug]
+    #
+    def on(namespace)
+      Namespace.new(namespace, self)
+    end
+
     private
 
-    def build_line(message, level = nil)
+    def build_line(message, namespace)
       res = []
       res << Time.now
-      res << "[#{@namespace}]" if @namespace
-      res << Lug::Standard::LEVEL_TEXT[level] if level
+      res << "[#{namespace}]" if namespace
       res << message
       res.join(' '.freeze)
+    end
+
+    def puts(string)
+      @io.write("#{string}\n")
+      nil
+    end
+  end
+
+  class Namespace
+    attr_reader :logger, :namespace
+
+    # Create a Namespace from +namespace+ associated to +logger+
+    #
+    # @param namespace [String, Symbol]
+    # @param logger [Lug::Logger]
+    #
+    def initialize(namespace, logger)
+      @namespace = namespace.to_s
+      @logger = logger
+    end
+
+    def log(message = nil, namespace = nil)
+      message ||= yield if block_given?
+      namespace = namespace ? "#{@namespace}:#{namespace}" : @namespace
+      @logger.log(message, namespace)
+    end
+    alias << log
+
+    def on(namespace)
+      Namespace.new("#{@namespace}:#{namespace}", @logger)
     end
   end
 end

@@ -1,168 +1,33 @@
 require 'spec_helper'
-require 'timecop'
 
 describe Lug do
   it 'has a version number' do
     refute_nil Lug::VERSION
   end
 
-  describe '#initialize' do
-    it 'defaults to no namespace and STDERR io' do
+  describe '.create' do
+    describe 'when +namespace+ is present' do
+      it 'returns a new Namespace with a TtyLogger' do
+        lug = Lug.create('main', TtyMockIO.new)
+
+        assert_instance_of Lug::Namespace, lug
+        assert_equal 'main', lug.namespace
+        assert_instance_of Lug::TtyLogger, lug.logger
+      end
+
+      it 'creates a new Namespace with a Logger' do
+        lug = Lug.create('main', StringIO.new)
+
+        assert_instance_of Lug::Namespace, lug
+        assert_equal 'main', lug.namespace
+        assert_instance_of Lug::Logger, lug.logger
+      end
+    end
+
+    it 'defaults to TtyLogger and stderr IO' do
       lug = Lug.create
-      assert_nil lug.namespace
-      assert_instance_of Lug::TtyDevice, lug.device
-      assert_equal STDERR, lug.device.io
-    end
-  end
-
-  describe '#on' do
-    describe 'without default namespace' do
-      before do
-        @io = StringIO.new
-        @lug = Lug.create(nil, @io)
-      end
-
-      it 'clones logger with namespace appended to default' do
-        lug = @lug.on(:script)
-
-        assert_instance_of Lug::Logger, lug
-        assert_equal @lug.device, lug.device
-        assert_equal 'script', lug.namespace
-      end
-    end
-
-    describe 'with default namespace' do
-      before do
-        @io = StringIO.new
-        @lug = Lug.create(:main, @io)
-      end
-
-      it 'clones logger with namespace' do
-        lug = @lug.on(:script)
-
-        assert_instance_of Lug::Logger, lug
-        assert_equal @lug.device, lug.device
-        assert_equal 'main:script', lug.namespace
-      end
-    end
-  end
-
-  describe '#log' do
-    describe 'when device is not a TTY' do
-      before do
-        @io = StringIO.new
-      end
-
-      describe 'without namespace' do
-        before do
-          @lug = Lug.create(nil, @io)
-        end
-
-        it 'logs message' do
-          Timecop.freeze(Time.now) do
-            @lug.log('my message')
-            assert_equal "#{Time.now} my message\n", @io.string
-          end
-        end
-
-        it 'logs message from block' do
-          Timecop.freeze(Time.now) do
-            @lug.log { 'my message' }
-            assert_equal "#{Time.now} my message\n", @io.string
-          end
-        end
-      end
-
-      describe 'with default namespace' do
-        before do
-          @lug = Lug.create(:main, @io)
-        end
-
-        it 'logs message with default namespace' do
-          Timecop.freeze(Time.now) do
-            @lug.log('my message')
-            assert_equal "#{Time.now} [main] my message\n", @io.string
-          end
-        end
-
-        it 'logs message from block with default namespace' do
-          Timecop.freeze(Time.now) do
-            @lug.log { 'my message' }
-            assert_equal "#{Time.now} [main] my message\n", @io.string
-          end
-        end
-      end
-    end
-
-    describe 'when device is a TTY' do
-      def line_re(ns, msg)
-        if ns
-          /\e\[\d+;\d+m#{ns}\e\[0m \e\[\d+;\d+m#{msg}\e\[0m \+\d+[ms]+/
-        else
-          /\e\[\d+;\d+m#{msg}\e\[0m \+\d+[ms]+/
-        end
-      end
-
-      before do
-        @io = TtyMockIO.new
-      end
-
-      describe 'without namespace' do
-        before do
-          @lug = Lug.create(nil, @io)
-        end
-
-        it 'logs message' do
-          @lug.log('my message')
-          assert_match line_re(nil, 'my message'), @io.string
-        end
-
-        it 'logs message from block' do
-          @lug.log { 'my message' }
-          assert_match line_re(nil, 'my message'), @io.string
-        end
-      end
-
-      describe 'with default namespace' do
-        before do
-          @lug = Lug.create(:main, @io)
-        end
-
-        it 'logs message with default namespace' do
-          @lug.log('my message')
-          assert_match line_re('main', 'my message'), @io.string
-        end
-
-        it 'logs message from block with default namespace' do
-          @lug.log { 'my message' }
-          assert_match line_re('main', 'my message'), @io.string
-        end
-      end
-    end
-  end
-
-  describe '#<<' do
-    before do
-      @io = StringIO.new
-      @lug = Lug.create(nil, @io)
-    end
-
-    it 'is an alias of #log' do
-      @lug.log 'message'
-      res_log = @io.string
-
-      @io.truncate(0)
-
-      @lug << 'message'
-      res = @io.string
-
-      assert_equal res_log, res
-    end
-  end
-
-  class TtyMockIO < StringIO
-    def isatty
-      true
+      assert_instance_of Lug::TtyLogger, lug
+      assert_equal STDERR, lug.io
     end
   end
 end

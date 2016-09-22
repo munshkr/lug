@@ -23,7 +23,11 @@ module Lug
     LIGHT_WHITE   = '1;37'.freeze
   end
 
-  class TtyDevice < Device
+  # Logger class for tty IO devices
+  #
+  # Output is colorized with standard ANSI escape codes
+  #
+  class TtyLogger < Logger
     NS_COLORS = [
       Colors::LIGHT_CYAN,
       Colors::LIGHT_GREEN,
@@ -41,11 +45,23 @@ module Lug
       Colors::RED
     ].freeze
 
-    def initialize(io)
+    MSG_COLOR = Colors::WHITE
+
+    def initialize(io = STDERR)
       super(io)
       @mutex = Mutex.new
       @colors_map = {}
       @prev_time = nil
+    end
+
+    private
+
+    def build_line(message, namespace)
+      res = []
+      res << colorized(namespace, choose_color(namespace)) if namespace
+      res << colorized(message, MSG_COLOR)
+      res << elapsed_text
+      res.join(' '.freeze)
     end
 
     def puts(string)
@@ -53,6 +69,11 @@ module Lug
         @prev_time = Time.now
         @io.write("#{string}\n")
       end
+      nil
+    end
+
+    def colorized(string, color)
+      "\e[#{color}m#{string}\e[0m"
     end
 
     def choose_color(namespace)
@@ -62,54 +83,9 @@ module Lug
       end
     end
 
-    def seconds_elapsed
-      Time.now - @prev_time
-    end
-
-    def new?
-      @prev_time.nil?
-    end
-  end
-
-  # Logger class for tty IO devices
-  #
-  # Output is colorized with standard ANSI escape codes
-  #
-  class TtyLogger < Logger
-    MSG_COLOR = Colors::WHITE
-
-    # Create a logger with an optional +namespace+ and +io_or_dev+ IO
-    # or Device as output
-    #
-    # @param io_or_dev [IO, Lug::Device] output device (default: stderr)
-    # @param namespace [String, Symbol] (default: nil)
-    #
-    def initialize(namespace = nil, io_or_dev = STDERR)
-      @namespace = namespace.to_s if namespace
-      @device = io_or_dev
-      @device = TtyDevice.new(io_or_dev) unless io_or_dev.is_a?(Device)
-      @namespace_color = @device.choose_color(@namespace) if @namespace
-    end
-
-    private
-
-    def build_line(message, level = nil)
-      res = []
-      res << colorized(@namespace, @namespace_color) if @namespace
-      res << colorized(Standard::LEVEL_TEXT[level],
-                       Standard::LEVEL_COLOR[level]) if level
-      res << colorized(message, MSG_COLOR)
-      res << elapsed_text
-      res.join(' '.freeze)
-    end
-
-    def colorized(string, color)
-      "\e[#{color}m#{string}\e[0m"
-    end
-
     def elapsed_text
-      return '+0ms'.freeze if @device.new?
-      secs = @device.seconds_elapsed
+      return '+0ms'.freeze if @prev_time.nil?
+      secs = Time.now - @prev_time
       if secs >= 60
         "+#{(secs / 60).to_i}m"
       elsif secs >= 1

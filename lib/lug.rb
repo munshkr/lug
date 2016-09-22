@@ -7,6 +7,7 @@ require 'lug/tty_logger'
 #
 module Lug
   def self.create(namespace = nil, io = STDERR)
-    io.isatty ? TtyLogger.new(namespace, io) : Logger.new(namespace, io)
+    logger = io.isatty ? TtyLogger.new(io) : Logger.new(io)
+    namespace ? logger.on(namespace) : logger
   end
 end

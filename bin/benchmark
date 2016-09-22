@@ -16,45 +16,42 @@ Benchmark.bmbm do |x|
     N.times { |i| logger.debug(i) }
   end
 
-  lug = Lug::Logger.new(nil, null_io)
+  lug = Lug::Logger.new(null_io)
   x.report('Lug::Logger#log') do
     N.times { |i| lug << i }
   end
 
-  lug = Lug::Logger.new(:main, null_io)
+  lug = Lug::Logger.new(null_io).on(:main)
   x.report('Lug::Logger#log (w/ns)') do
     N.times { |i| lug << i }
   end
 
-  lug = Lug::TtyLogger.new(nil, null_io)
+  lug = Lug::TtyLogger.new(null_io)
   x.report('Lug::TtyLogger#log') do
     N.times { |i| lug << i }
   end
 
-  lug = Lug::TtyLogger.new(:main, null_io)
+  lug = Lug::TtyLogger.new(null_io).on(:main)
   x.report('Lug::TtyLogger#log (w/ns)') do
     N.times { |i| lug << i }
   end
 
-  # Include standard Logger methods mixin
-  Lug::Logger.include(Lug::Standard)
-
-  lug = Lug::Logger.new(nil, null_io)
+  lug = Lug::Logger.new(null_io)
   x.report('Lug::Logger#debug + Standard') do
     N.times { |i| lug.debug(i) }
   end
 
-  lug = Lug::Logger.new(:main, null_io)
+  lug = Lug::Logger.new(null_io).on(:main)
   x.report('Lug::Logger#debug + Standard (w/ns)') do
     N.times { |i| lug.debug(i) }
   end
 
-  lug = Lug::TtyLogger.new(nil, null_io)
+  lug = Lug::TtyLogger.new(null_io)
   x.report('Lug::TtyLogger#debug + Standard') do
     N.times { |i| lug.debug(i) }
   end
 
-  lug = Lug::TtyLogger.new(:main, null_io)
+  lug = Lug::TtyLogger.new(null_io).on(:main)
   x.report('Lug::TtyLogger#debug + Standard (w/ns)') do
     N.times { |i| lug.debug(i) }
   end
