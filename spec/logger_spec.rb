@@ -37,21 +37,21 @@ describe Lug::Logger do
       it 'logs message' do
         Timecop.freeze(Time.now) do
           @logger.log('my message')
-          assert_equal "#{Time.now} #{$$} my message\n", @io.string
+          assert_equal "#{Time.now} #{$PROCESS_ID} my message\n", @io.string
         end
       end
 
       it 'logs message from block' do
         Timecop.freeze(Time.now) do
           @logger.log { 'my message' }
-          assert_equal "#{Time.now} #{$$} my message\n", @io.string
+          assert_equal "#{Time.now} #{$PROCESS_ID} my message\n", @io.string
         end
       end
 
       it 'logs +message+ if not nil, even if a block is given' do
         Timecop.freeze(Time.now) do
           @logger.log('my message') { 'another message' }
-          assert_equal "#{Time.now} #{$$} my message\n", @io.string
+          assert_equal "#{Time.now} #{$PROCESS_ID} my message\n", @io.string
         end
       end
     end
@@ -60,14 +60,14 @@ describe Lug::Logger do
       it 'logs message' do
         Timecop.freeze(Time.now) do
           @logger.log('my message', :main)
-          assert_equal "#{Time.now} #{$$} [main] my message\n", @io.string
+          assert_equal "#{Time.now} #{$PROCESS_ID} [main] my message\n", @io.string
         end
       end
 
       it 'logs message from block' do
         Timecop.freeze(Time.now) do
           @logger.log(nil, :main) { 'my message' }
-          assert_equal "#{Time.now} #{$$} [main] my message\n", @io.string
+          assert_equal "#{Time.now} #{$PROCESS_ID} [main] my message\n", @io.string
         end
       end
     end
