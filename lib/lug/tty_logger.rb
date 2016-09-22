@@ -56,18 +56,17 @@ module Lug
 
     private
 
-    def build_line(message, namespace)
-      res = []
-      res << colorized(namespace, choose_color(namespace)) if namespace
-      res << colorized(message, MSG_COLOR)
-      res << elapsed_text
-      res.join(' '.freeze)
-    end
-
-    def puts(string)
+    def print_line(message, namespace)
       @mutex.synchronize do
-        @prev_time = Time.now
-        @io.write("#{string}\n")
+        now = Time.now
+        line = [
+          namespace && colorized(namespace, choose_color(namespace)),
+          colorized(message, MSG_COLOR),
+          elapsed_text(now)
+        ].compact.join(' '.freeze)
+        @prev_time = now
+
+        @io.write("#{line}\n")
       end
       nil
     end
@@ -77,15 +76,13 @@ module Lug
     end
 
     def choose_color(namespace)
-      @mutex.synchronize do
-        @colors_map[namespace] ||=
-          NS_COLORS[@colors_map.size % NS_COLORS.size]
-      end
+      @colors_map[namespace] ||=
+        NS_COLORS[@colors_map.size % NS_COLORS.size]
     end
 
-    def elapsed_text
+    def elapsed_text(now)
       return '+0ms'.freeze if @prev_time.nil?
-      secs = Time.now - @prev_time
+      secs = now - @prev_time
       if secs >= 60
         "+#{(secs / 60).to_i}m"
       elsif secs >= 1

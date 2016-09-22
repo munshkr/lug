@@ -38,7 +38,7 @@ module Lug
     end
 
     module NamespaceMethods
-      def log(message = nil, namespace = nil, level = nil)
+      def log(message = nil, namespace = nil, _level = nil)
         message ||= yield if block_given?
         namespace = namespace ? "#{@namespace}:#{namespace}" : @namespace
         @logger.log(message, namespace)

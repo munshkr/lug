@@ -28,7 +28,7 @@ module Lug
     #
     def log(message = nil, namespace = nil)
       message ||= yield if block_given?
-      puts(build_line(message, namespace))
+      print_line(message, namespace)
     end
     alias << log
 
@@ -43,16 +43,14 @@ module Lug
 
     private
 
-    def build_line(message, namespace)
-      res = []
-      res << Time.now
-      res << "[#{namespace}]" if namespace
-      res << message
-      res.join(' '.freeze)
-    end
+    def print_line(message, namespace)
+      line = [
+        Time.now,
+        namespace && "[#{namespace}]",
+        message
+      ].compact.join(' '.freeze)
 
-    def puts(string)
-      @io.write("#{string}\n")
+      @io.write("#{line}\n")
       nil
     end
   end
