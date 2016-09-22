@@ -34,14 +34,14 @@ describe Lug::Namespace do
     it 'logs message' do
       Timecop.freeze(Time.now) do
         @ns.log('my message')
-        assert_equal "#{Time.now} #{$PROCESS_ID} [main] my message\n", @io.string
+        assert_equal "#{Time.now} #{$$} [main] my message\n", @io.string
       end
     end
 
     it 'logs message from block' do
       Timecop.freeze(Time.now) do
         @ns.log { 'my message' }
-        assert_equal "#{Time.now} #{$PROCESS_ID} [main] my message\n", @io.string
+        assert_equal "#{Time.now} #{$$} [main] my message\n", @io.string
       end
     end
   end
