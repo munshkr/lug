@@ -3,8 +3,6 @@
 require 'bundler/setup'
 require 'benchmark'
 require 'lug/logger'
-require 'lug/tty_logger'
-require 'lug/standard'
 require 'logger'
 
 null_io = File.open(File::NULL, 'a')
@@ -35,6 +33,8 @@ Benchmark.bmbm do |x|
   x.report('Lug::TtyLogger#log (w/ns)') do
     N.times { |i| lug << i }
   end
+
+  require 'lug/standard'
 
   lug = Lug::Logger.new(null_io)
   x.report('Lug::Logger#debug + Standard') do

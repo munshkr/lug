@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+require 'lug/logger'
+
 module Lug
   module Standard
     LEVEL_TEXT = [
