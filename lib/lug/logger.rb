@@ -9,6 +9,7 @@ module Lug
       @io = io
       @io.sync = true
 
+      @enabled_namespaces = []
       enable(ENV['DEBUG'.freeze].to_s) if ENV['DEBUG']
     end
 
@@ -156,8 +157,8 @@ module Lug
     def initialize(io = STDERR)
       super(io)
       @mutex = Mutex.new
-      @colors_map = {}
       @prev_time = nil
+      @colored_namespaces = {}
     end
 
     private
@@ -166,8 +167,8 @@ module Lug
       @mutex.synchronize do
         now = Time.now
         line = [
-          namespace && colorized(namespace, choose_color(namespace)),
-          colorized(message, MSG_COLOR),
+          namespace && colorize_namespace(namespace),
+          colorize(message, MSG_COLOR),
           elapsed_text(now)
         ].compact.join(' '.freeze)
         @prev_time = now
@@ -177,13 +178,13 @@ module Lug
       nil
     end
 
-    def colorized(string, color)
-      "\e[#{color}m#{string}\e[0m"
+    def colorize_namespace(namespace)
+      @colored_namespaces[namespace] ||=
+        colorize(namespace, NS_COLORS[@colored_namespaces.size % NS_COLORS.size])
     end
 
-    def choose_color(namespace)
-      @colors_map[namespace] ||=
-        NS_COLORS[@colors_map.size % NS_COLORS.size]
+    def colorize(string, color)
+      "\e[#{color}m#{string}\e[0m"
     end
 
     def elapsed_text(now)

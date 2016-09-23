@@ -33,8 +33,8 @@ module Lug
       def log(message = nil, namespace = nil, level = nil)
         message ||= yield if block_given?
         if level
-          message = "#{colorized(LEVEL_TEXT[level],
-                                 LEVEL_COLOR[level])} #{message}"
+          colored_level = colorize(LEVEL_TEXT[level], LEVEL_COLOR[level])
+          message = "#{colored_level} #{message}"
         end
         super(message, namespace)
       end
