@@ -22,9 +22,26 @@ module Lug
     ].freeze
 
     module LoggerMethods
+      attr_accessor :level_threshold
+
+      def initialize(*args)
+        super
+        set_level_threshold
+      end
+
       def log(message, namespace = nil, level = nil)
         message = "#{LEVEL_TEXT[level]} #{message}" if level
         super(message, namespace)
+      end
+
+      private
+
+      def set_level_threshold
+        if ENV['LOG_LEVEL'.freeze]
+          level = ENV['LOG_LEVEL'.freeze].to_s.upcase
+          @level_threshold = LEVEL_TEXT.index(level)
+        end
+        @level_threshold ||= 0
       end
     end
 
@@ -40,7 +57,8 @@ module Lug
 
     module NamespaceMethods
       def log(message, level = nil)
-        return unless @enabled
+        return if level.to_i < logger.level_threshold ||
+                  (level.to_i == 0 && !@enabled)
         message ||= yield if block_given?
         @logger.log(message, @namespace, level)
       end
@@ -80,11 +98,9 @@ module Lug
   end
 
   # Overwrite methods on Logger and Namespace classes
-  Logger.prepend(Standard::LoggerMethods)
-  Namespace.prepend(Standard::NamespaceMethods)
-  TtyLogger.prepend(Standard::TtyLoggerMethods)
-
-  # Include extra level methods
-  Logger.include(Standard::LoggerNamespaceMethods)
-  Namespace.include(Standard::LoggerNamespaceMethods)
+  Logger.prepend Standard::LoggerMethods
+  Logger.prepend Standard::LoggerNamespaceMethods
+  TtyLogger.prepend Standard::TtyLoggerMethods
+  Namespace.prepend Standard::NamespaceMethods
+  Namespace.prepend Standard::LoggerNamespaceMethods
 end
