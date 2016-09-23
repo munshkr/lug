@@ -32,25 +32,21 @@ module Lug
     module DeviceMethods
       attr_accessor :level_threshold
 
-      def initialize(*args)
-        super
-        set_level_threshold
-      end
-
       def log(message, namespace = nil, level = nil)
         message = "#{LEVEL_TEXT[level]} #{message}" if level
         super(message, namespace)
       end
       alias << log
 
-      private
-
-      def set_level_threshold
-        if ENV['LOG_LEVEL'.freeze]
-          level = ENV['LOG_LEVEL'.freeze].to_s.upcase
-          @level_threshold = LEVEL_TEXT.index(level)
+      def level_threshold
+        @level_threshold ||= begin
+          res = nil
+          if ENV['LOG_LEVEL'.freeze]
+            level = ENV['LOG_LEVEL'.freeze].to_s.upcase
+            res = LEVEL_TEXT.index(level)
+          end
+          res ||= 0
         end
-        @level_threshold ||= 0
       end
     end
 
