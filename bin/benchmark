@@ -15,25 +15,25 @@ Benchmark.bmbm do |x|
     N.times { |i| logger.debug(i) }
   end
 
-  lug = Lug::Logger.new(null_io).on(:main)
+  lug = Lug::Device.new(null_io).on(:main)
   x.report('Lug::Logger#log') do
     N.times { |i| lug << i }
   end
 
-  lug = Lug::TtyLogger.new(null_io).on(:main)
-  x.report('Lug::TtyLogger#log') do
+  lug = Lug::TtyDevice.new(null_io).on(:main)
+  x.report('Lug::Logger#log + TtyDevice') do
     N.times { |i| lug << i }
   end
 
   require 'lug/standard'
 
-  lug = Lug::Logger.new(null_io).on(:main)
+  lug = Lug::Device.new(null_io).on(:main)
   x.report('Lug::Logger#debug') do
     N.times { |i| lug.debug(i) }
   end
 
-  lug = Lug::TtyLogger.new(null_io).on(:main)
-  x.report('Lug::TtyLogger#debug') do
+  lug = Lug::TtyDevice.new(null_io).on(:main)
+  x.report('Lug::Logger#debug + TtyDevice') do
     N.times { |i| lug.debug(i) }
   end
 end

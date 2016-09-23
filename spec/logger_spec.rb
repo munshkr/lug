@@ -3,71 +3,83 @@ require 'spec_helper'
 describe Lug::Logger do
   before do
     @io = StringIO.new
+    ENV['DEBUG'] = '*'
+  end
+
+  after do
+    ENV.delete('DEBUG')
   end
 
   describe '#initialize' do
-    it 'creates a logger with stderr as default IO' do
-      logger = Lug::Logger.new
-      assert_equal STDERR, logger.io
+    before do
+      @device = Lug::Device.new(@io)
     end
 
-    it 'accepts an optional +io+ parameter' do
-      logger = Lug::Logger.new(@io)
-      assert_equal @io, logger.io
+    it 'accepts a +device+ instance and a +namespace+ string' do
+      logger = Lug::Logger.new(@device, :main)
+
+      assert_equal 'main', logger.namespace
+      assert_equal @device, logger.device
     end
 
-    it 'calls #enable with DEBUG env variable if set' do
-      ENV['DEBUG'] = 'foo'
+    it '+namespace+ can be nil' do
+      logger = Lug::Logger.new(@device)
 
-      logger = Lug::Logger.new
-      assert logger.enabled_for?(:foo)
-      refute logger.enabled_for?(:bar)
+      assert_nil logger.namespace
+      assert_equal @device, logger.device
     end
   end
 
   describe '#log' do
     before do
-      @logger = Lug::Logger.new(@io)
+      @logger = Lug::Device.new(@io).on(:main)
     end
 
     it 'logs message' do
       Timecop.freeze(Time.now) do
         @logger.log('my message')
-        assert_equal "#{Time.now} #{$$} my message\n", @io.string
+        assert_equal "#{Time.now} #{$$} [main] my message\n", @io.string
       end
     end
 
-    it 'logs message with namespace' do
+    it 'logs message from block' do
       Timecop.freeze(Time.now) do
-        @logger.log('my message', :main)
+        @logger.log { 'my message' }
+        assert_equal "#{Time.now} #{$$} [main] my message\n", @io.string
+      end
+    end
+
+    it 'logs +message+ if not nil, even if a block is given' do
+      Timecop.freeze(Time.now) do
+        @logger.log('my message') { 'another message' }
         assert_equal "#{Time.now} #{$$} [main] my message\n", @io.string
       end
     end
   end
 
   describe '#on' do
-    it 'creates a Namespace thats wraps logger with +namespace+' do
-      logger = Lug::Logger.new(@io)
-      ns = logger.on(:script)
+    it 'creates another Namespace with +namespace+ appended' do
+      @logger = Lug::Device.new(@io).on(:main)
+      logger = @logger.on(:script)
 
-      assert_instance_of Lug::Namespace, ns
-      assert_equal logger, ns.logger
-      assert_equal 'script', ns.namespace
+      assert_instance_of Lug::Logger, logger
+      assert_equal @logger.device, logger.device
+      assert_equal 'main:script', logger.namespace
     end
   end
 
-  describe '#<<' do
-    it 'is an alias of #log' do
-      logger = Lug::Logger.new(@io)
-      logger.log 'message'
-      res_log = @io.string
+  describe '#enabled?' do
+    before do
+      ENV['DEBUG'] = 'foo'
+    end
 
-      @io.truncate(0)
+    after do
+      ENV.delete('DEBUG')
+    end
 
-      logger << 'message'
-      res = @io.string
-
-      assert_equal res_log, res
+    it 'is true if logger has that namespace enabled' do
+      assert Lug::Device.new(@io).on(:foo).enabled?
+      refute Lug::Device.new(@io).on(:bar).enabled?
     end
   end
 end

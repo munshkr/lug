@@ -1,22 +1,22 @@
 require 'spec_helper'
 
-describe Lug::TtyLogger do
+describe Lug::TtyDevice do
   before do
     @io = TtyMockIO.new
   end
 
   describe '#log' do
     before do
-      @logger = Lug::TtyLogger.new(@io)
+      @device = Lug::TtyDevice.new(@io)
     end
 
     it 'logs message' do
-      @logger.log('my message')
+      @device.log('my message')
       assert_match line_re(nil, 'my message'), @io.string
     end
 
     it 'logs message with namespace' do
-      @logger.log('my message', :main)
+      @device.log('my message', :main)
       assert_match line_re('main', 'my message'), @io.string
     end
   end

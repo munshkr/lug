@@ -2,7 +2,7 @@
 require 'thread'
 
 module Lug
-  class Logger
+  class Device
     attr_reader :io
 
     def initialize(io = STDERR)
@@ -50,7 +50,7 @@ module Lug
     # @return [Lug]
     #
     def on(namespace)
-      Namespace.new(self, namespace)
+      Logger.new(self, namespace)
     end
 
     def enabled_for?(namespace)
@@ -99,7 +99,7 @@ module Lug
   #
   # Output is colorized with standard ANSI escape codes
   #
-  class TtyLogger < Logger
+  class TtyDevice < Device
     NS_COLORS = [
       Colors::LIGHT_CYAN,
       Colors::LIGHT_GREEN,
@@ -165,30 +165,30 @@ module Lug
     end
   end
 
-  class Namespace
-    attr_reader :logger, :namespace
+  class Logger
+    attr_reader :device, :namespace
 
-    # Create a Namespace from +namespace+ associated to +logger+
+    # Create a Logger for +device+ within +namespace+
     #
-    # @param logger [Lug::Logger]
+    # @param device [Lug::Device]
     # @param namespace [String, Symbol]
     #
-    def initialize(logger, namespace = nil)
-      @logger = logger
+    def initialize(device, namespace = nil)
+      @device = device
       @namespace = namespace && namespace.to_s
-      @enabled = @logger.enabled_for?(@namespace)
+      @enabled = @device.enabled_for?(@namespace)
     end
 
     def log(message = nil)
       return unless @enabled
       message ||= yield if block_given?
-      @logger.log(message, @namespace)
+      @device.log(message, @namespace)
     end
     alias << log
 
     def on(namespace)
       namespace = [@namespace, namespace].compact.join(':'.freeze)
-      Namespace.new(@logger, namespace)
+      Logger.new(@device, namespace)
     end
 
     def enabled?

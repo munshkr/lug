@@ -21,7 +21,7 @@ module Lug
       Colors::MAGENTA
     ].freeze
 
-    module LoggerMethods
+    module DeviceMethods
       attr_accessor :level_threshold
 
       def initialize(*args)
@@ -33,6 +33,7 @@ module Lug
         message = "#{LEVEL_TEXT[level]} #{message}" if level
         super(message, namespace)
       end
+      alias << log
 
       private
 
@@ -45,7 +46,7 @@ module Lug
       end
     end
 
-    module TtyLoggerMethods
+    module TtyDeviceMethods
       def log(message, namespace = nil, level = nil)
         if level
           colored_level = colorize(LEVEL_TEXT[level], LEVEL_COLOR[level])
@@ -53,18 +54,20 @@ module Lug
         end
         super(message, namespace)
       end
+      alias << log
     end
 
-    module NamespaceMethods
+    module LoggerMethods
       def log(message, level = nil)
-        return if level.to_i < logger.level_threshold ||
+        return if level.to_i < @device.level_threshold ||
                   (level.to_i == 0 && !@enabled)
         message ||= yield if block_given?
-        @logger.log(message, @namespace, level)
+        @device.log(message, @namespace, level)
       end
+      alias << log
     end
 
-    module LoggerNamespaceMethods
+    module LoggerDeviceMethods
       def debug(msg = nil)
         msg ||= yield if block_given?
         log(msg, 0)
@@ -97,10 +100,10 @@ module Lug
     end
   end
 
-  # Overwrite methods on Logger and Namespace classes
+  # Overwrite methods on Device and Logger classes
+  Device.prepend Standard::DeviceMethods
+  Device.prepend Standard::LoggerDeviceMethods
+  TtyDevice.prepend Standard::TtyDeviceMethods
   Logger.prepend Standard::LoggerMethods
-  Logger.prepend Standard::LoggerNamespaceMethods
-  TtyLogger.prepend Standard::TtyLoggerMethods
-  Namespace.prepend Standard::NamespaceMethods
-  Namespace.prepend Standard::LoggerNamespaceMethods
+  Logger.prepend Standard::LoggerDeviceMethods
 end

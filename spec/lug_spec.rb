@@ -7,29 +7,29 @@ describe Lug do
 
   describe '.create' do
     describe 'when +namespace+ is present' do
-      it 'returns a new Namespace with a TtyLogger' do
-        lug = Lug.create('main', TtyMockIO.new)
+      it 'returns a new Logger with a TtyDevice' do
+        logger = Lug.create('main', TtyMockIO.new)
 
-        assert_instance_of Lug::Namespace, lug
-        assert_equal 'main', lug.namespace
-        assert_instance_of Lug::TtyLogger, lug.logger
+        assert_instance_of Lug::Logger, logger
+        assert_equal 'main', logger.namespace
+        assert_instance_of Lug::TtyDevice, logger.device
       end
 
       it 'creates a new Namespace with a Logger' do
-        lug = Lug.create('main', StringIO.new)
+        logger = Lug.create('main', StringIO.new)
 
-        assert_instance_of Lug::Namespace, lug
-        assert_equal 'main', lug.namespace
-        assert_instance_of Lug::Logger, lug.logger
+        assert_instance_of Lug::Logger, logger
+        assert_equal 'main', logger.namespace
+        assert_instance_of Lug::Device, logger.device
       end
     end
 
-    it 'defaults to TtyLogger and stderr IO' do
-      lug = Lug.create
-      assert_instance_of Lug::Namespace, lug
-      assert_nil lug.namespace
-      assert_instance_of Lug::TtyLogger, lug.logger
-      assert_equal STDERR, lug.logger.io
+    it 'defaults to TtyDevice and stderr IO' do
+      logger = Lug.create
+      assert_instance_of Lug::Logger, logger
+      assert_nil logger.namespace
+      assert_instance_of Lug::TtyDevice, logger.device
+      assert_equal STDERR, logger.device.io
     end
   end
 end
