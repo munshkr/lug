@@ -3,6 +3,14 @@ require 'lug/logger'
 
 module Lug
   module Standard
+    def self.load!
+      # Overwrite methods on Device and Logger classes
+      Device.prepend Standard::DeviceMethods, Standard::LoggerDeviceMethods
+      TtyDevice.prepend Standard::TtyDeviceMethods
+      Logger.prepend Standard::LoggerMethods, Standard::LoggerDeviceMethods
+      true
+    end
+
     LEVEL_TEXT = [
       'DEBUG'.freeze,
       'INFO'.freeze,
@@ -99,11 +107,4 @@ module Lug
       end
     end
   end
-
-  # Overwrite methods on Device and Logger classes
-  Device.prepend Standard::DeviceMethods
-  Device.prepend Standard::LoggerDeviceMethods
-  TtyDevice.prepend Standard::TtyDeviceMethods
-  Logger.prepend Standard::LoggerMethods
-  Logger.prepend Standard::LoggerDeviceMethods
 end

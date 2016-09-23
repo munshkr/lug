@@ -1,42 +1,48 @@
-require 'lug'
+# frozen_string_literal: true
 
 module Lug
-  module Object
-    def logger
-      defined?(LUG) && LUG
+  module Extend
+    def self.load!
+      ::Object.include Object
+      ::Class.include Class
+      true
     end
-  end
 
-  module Class
-    def logger_on(namespace)
-      cap_ns = namespace.to_s.split(':').map(&:capitalize).join
-      mod_name = :"LoggerOn#{cap_ns}"
+    module Object
+      def logger
+        defined?(LUG) && LUG
+      end
+    end
 
-      return const_get(mod_name) if const_defined?(mod_name)
-      return unless LUG
+    module Class
+      def logger_on(namespace)
+        cap_ns = namespace.to_s.split(':').map(&:capitalize).join
+        mod_name = :"LoggerOn#{cap_ns}"
 
-      mod = Module.new
-      mod.module_eval(%(
-        module ClassMethods
-          def logger
-            LUG.on(#{namespace.inspect})
+        return const_get(mod_name) if const_defined?(mod_name)
+        return unless LUG
+
+        mod = Module.new
+        mod.module_eval(%(
+          module ClassMethods
+            def logger
+              LUG.on(#{namespace.inspect})
+            end
           end
-        end
 
-        def self.included(receiver)
-          receiver.extend(ClassMethods)
-        end
+          def self.included(receiver)
+            receiver.extend(ClassMethods)
+          end
 
-        def logger
-          self.class.logger
-        end
-      ))
-      const_set(mod_name, mod)
+          def logger
+            self.class.logger
+          end
+        ))
+        const_set(mod_name, mod)
 
-      include mod
+        include mod
+      end
     end
   end
 end
 
-Object.send(:include, Lug::Object)
-Class.send(:include, Lug::Class)

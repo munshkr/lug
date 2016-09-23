@@ -3,6 +3,7 @@
 require 'bundler/setup'
 require 'benchmark'
 require 'lug/logger'
+require 'lug/standard'
 require 'logger'
 
 ENV['DEBUG'] = '*'
@@ -25,7 +26,7 @@ Benchmark.bmbm do |x|
     N.times { |i| lug << i }
   end
 
-  require 'lug/standard'
+  Lug::Standard.load!
 
   lug = Lug::Device.new(null_io).on(:main)
   x.report('Lug::Logger#debug') do
