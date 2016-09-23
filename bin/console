@@ -2,6 +2,10 @@
 
 require 'bundler/setup'
 require 'lug'
+require 'lug/standard'
+require 'lug/extend'
+
+LUG = Lug.create
 
 require 'pry'
 Pry.start
