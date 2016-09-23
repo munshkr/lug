@@ -32,7 +32,15 @@ module Lug
     # @return [NilClass]
     #
     def log(message = nil, namespace = nil)
-      print_line(message, namespace)
+      line = [
+        Time.now,
+        $$,
+        namespace && "[#{namespace}]",
+        message
+      ].compact.join(' '.freeze)
+
+      @io.write("#{line}\n")
+      nil
     end
     alias << log
 
@@ -55,18 +63,6 @@ module Lug
     end
 
     private
-
-    def print_line(message, namespace = nil)
-      line = [
-        Time.now,
-        $$,
-        namespace && "[#{namespace}]",
-        message
-      ].compact.join(' '.freeze)
-
-      @io.write("#{line}\n")
-      nil
-    end
 
     def parse_namespace_filter(filter)
       res = []
@@ -161,9 +157,7 @@ module Lug
       @colored_namespaces = {}
     end
 
-    private
-
-    def print_line(message, namespace = nil)
+    def log(message, namespace = nil)
       @mutex.synchronize do
         now = Time.now
         line = [
@@ -177,6 +171,8 @@ module Lug
       end
       nil
     end
+
+    private
 
     def colorize_namespace(namespace)
       @colored_namespaces[namespace] ||=
