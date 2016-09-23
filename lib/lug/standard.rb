@@ -22,16 +22,14 @@ module Lug
     ].freeze
 
     module LoggerMethods
-      def log(message = nil, namespace = nil, level = nil)
-        message ||= yield if block_given?
+      def log(message, namespace = nil, level = nil)
         message = "#{LEVEL_TEXT[level]} #{message}" if level
         super(message, namespace)
       end
     end
 
     module TtyLoggerMethods
-      def log(message = nil, namespace = nil, level = nil)
-        message ||= yield if block_given?
+      def log(message, namespace = nil, level = nil)
         if level
           colored_level = colorize(LEVEL_TEXT[level], LEVEL_COLOR[level])
           message = "#{colored_level} #{message}"
@@ -41,7 +39,7 @@ module Lug
     end
 
     module NamespaceMethods
-      def log(message = nil, level = nil)
+      def log(message, level = nil)
         return unless @enabled
         message ||= yield if block_given?
         @logger.log(message, @namespace, level)

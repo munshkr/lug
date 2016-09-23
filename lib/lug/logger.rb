@@ -31,7 +31,7 @@ module Lug
     # @param msg [String]
     # @return [NilClass]
     #
-    def log(message = nil, namespace = nil)
+    def log(message, namespace = nil)
       line = [
         Time.now,
         $$,
@@ -72,37 +72,6 @@ module Lug
         res << /^#{ns}$/
       end
       res
-    end
-  end
-
-  class Namespace
-    attr_reader :logger, :namespace
-
-    # Create a Namespace from +namespace+ associated to +logger+
-    #
-    # @param logger [Lug::Logger]
-    # @param namespace [String, Symbol]
-    #
-    def initialize(logger, namespace = nil)
-      @logger = logger
-      @namespace = namespace && namespace.to_s
-      @enabled = @logger.enabled_for?(@namespace)
-    end
-
-    def log(message = nil)
-      return unless @enabled
-      message ||= yield if block_given?
-      @logger.log(message, @namespace)
-    end
-    alias << log
-
-    def on(namespace)
-      namespace = [@namespace, namespace].compact.join(':'.freeze)
-      Namespace.new(@logger, namespace)
-    end
-
-    def enabled?
-      @enabled
     end
   end
 
@@ -193,6 +162,37 @@ module Lug
       else
         "+#{(secs * 1000).to_i}ms"
       end
+    end
+  end
+
+  class Namespace
+    attr_reader :logger, :namespace
+
+    # Create a Namespace from +namespace+ associated to +logger+
+    #
+    # @param logger [Lug::Logger]
+    # @param namespace [String, Symbol]
+    #
+    def initialize(logger, namespace = nil)
+      @logger = logger
+      @namespace = namespace && namespace.to_s
+      @enabled = @logger.enabled_for?(@namespace)
+    end
+
+    def log(message = nil)
+      return unless @enabled
+      message ||= yield if block_given?
+      @logger.log(message, @namespace)
+    end
+    alias << log
+
+    def on(namespace)
+      namespace = [@namespace, namespace].compact.join(':'.freeze)
+      Namespace.new(@logger, namespace)
+    end
+
+    def enabled?
+      @enabled
     end
   end
 end
