@@ -5,7 +5,7 @@ require 'lug'
 require 'lug/standard'
 require 'lug/extend'
 
-LUG = Lug.create
+LUG = Lug::Logger.new
 
 require 'pry'
 Pry.start

@@ -173,8 +173,9 @@ module Lug
     # @param device [Lug::Device]
     # @param namespace [String, Symbol]
     #
-    def initialize(device, namespace = nil)
-      @device = device
+    def initialize(dev_or_io = nil, namespace = nil)
+      dev_or_io ||= STDERR
+      @device = dev_or_io.is_a?(Device) ? dev_or_io : device_from(dev_or_io)
       @namespace = namespace && namespace.to_s
       @enabled = @device.enabled_for?(@namespace)
     end
@@ -193,6 +194,12 @@ module Lug
 
     def enabled?
       @enabled
+    end
+
+    private
+
+    def device_from(io)
+      io.isatty ? TtyDevice.new(io) : Device.new(io)
     end
   end
 end
