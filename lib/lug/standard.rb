@@ -41,11 +41,12 @@ module Lug
       def level_threshold
         @level_threshold ||= begin
           res = nil
-          if ENV['LOG_LEVEL'.freeze]
-            level = ENV['LOG_LEVEL'.freeze].to_s.upcase
+          log_level = ENV['LOG_LEVEL'.freeze]
+          if log_level
+            level = log_level.to_s.upcase
             res = LEVEL_TEXT.index(level)
           end
-          res ||= 0
+          res || 0
         end
       end
     end
@@ -63,8 +64,9 @@ module Lug
 
     module LoggerMethods
       def log(message, level = nil)
-        return if level.to_i < @device.level_threshold ||
-                  (level.to_i == 0 && !@enabled)
+        level_i = level.to_i
+        return if level_i < @device.level_threshold ||
+                  (level_i == 0 && !@enabled)
         message ||= yield if block_given?
         @device.log(message, @namespace, level)
       end

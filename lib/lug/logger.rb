@@ -54,24 +54,12 @@ module Lug
     end
 
     def enabled_for?(namespace)
-      namespace = namespace.to_s
-      @enabled_namespaces.any? { |re| namespace =~ re }
+      ns = namespace.to_s
+      @enabled_namespaces.any? { |re| ns =~ re }
     end
 
     def enable(filter)
-      @enabled_namespaces = parse_namespace_filter(filter)
-    end
-
-    private
-
-    def parse_namespace_filter(filter)
-      res = []
-      filter.split(/[\s,]+/).each do |ns|
-        next if ns.empty?
-        ns = ns.gsub('*'.freeze, '.*?'.freeze)
-        res << /^#{ns}$/
-      end
-      res
+      @enabled_namespaces = Helpers.parse_namespace_filter(filter)
     end
   end
 
@@ -153,8 +141,7 @@ module Lug
     end
 
     def elapsed_text(now)
-      return '+0ms'.freeze if @prev_time.nil?
-      secs = now - @prev_time
+      secs = now - (@prev_time || now)
       if secs >= 60
         "+#{(secs / 60).to_i}m"
       elsif secs >= 1
@@ -175,7 +162,7 @@ module Lug
     #
     def initialize(dev_or_io = nil, namespace = nil)
       dev_or_io ||= STDERR
-      @device = dev_or_io.is_a?(Device) ? dev_or_io : device_from(dev_or_io)
+      @device = dev_or_io.is_a?(Device) ? dev_or_io : Helpers.device_from(dev_or_io)
       @namespace = namespace && namespace.to_s
       @enabled = @device.enabled_for?(@namespace)
     end
@@ -195,11 +182,21 @@ module Lug
     def enabled?
       @enabled
     end
+  end
 
-    private
-
-    def device_from(io)
+  module Helpers
+    def self.device_from(io)
       io.isatty ? TtyDevice.new(io) : Device.new(io)
+    end
+
+    def self.parse_namespace_filter(filter)
+      res = []
+      filter.split(/[\s,]+/).each do |ns|
+        next if ns.empty?
+        ns = ns.gsub('*'.freeze, '.*?'.freeze)
+        res << /^#{ns}$/
+      end
+      res
     end
   end
 end
