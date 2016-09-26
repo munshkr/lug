@@ -252,15 +252,39 @@ module Lug
 
     private
 
+    # Colorize a +namespace+ string
+    #
+    # Tries to use a different color than the one used for the previous
+    # namespace used.
+    #
+    # @param namespace [String, Symbol]
+    # @return [String] colored namespace string
+    #
     def colorize_namespace(namespace)
       @colored_namespaces[namespace] ||=
         colorize(namespace, NS_COLORS[@colored_namespaces.size % NS_COLORS.size])
     end
 
+    # Colorize a +string+ by adding ANSI escape codes for a specific +color+
+    #
+    # See {Lug::Colors}
+    #
+    # @param string [String]
+    # @param color [String]
+    # @return [String] colored string
+    #
     def colorize(string, color)
       "\e[#{color}m#{string}\e[0m"
     end
 
+    # Calculates elapsed time from previous call to #log up to +now+
+    #
+    # Returns a string that represents elapsed time rounded to minutes,
+    # seconds or milliseconds.
+    #
+    # @param now [Time]
+    # @return [String]
+    #
     def elapsed_text(now)
       secs = now - (@prev_time || now)
       if secs >= 60
@@ -274,10 +298,20 @@ module Lug
   end
 
   module Helpers
+    # Create a Device instance from an +io+
+    #
+    # @param io [IO]
+    # @return [Device]
+    #
     def self.device_from(io)
       io.isatty ? TtyDevice.new(io) : Device.new(io)
     end
 
+    # Parse a namespace +filter+ string and build a list of Regexp filters
+    #
+    # @param filter [String]
+    # @return [Array<Regexp>] list of filters
+    #
     def self.parse_namespace_filter(filter)
       res = []
       filter.split(/[\s,]+/).each do |ns|

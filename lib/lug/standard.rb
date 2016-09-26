@@ -2,6 +2,26 @@
 require 'lug/logger'
 
 module Lug
+  # Standard module extends Lug classes so that it behaves similarly to
+  # traditional Logger classes.
+  #
+  # To use, after requiring this file, call:
+  #
+  #     Lug::Standard.load!
+  #
+  # It basically adds methods for writing messages in different severity
+  # levels: `#debug`, `info`, `#warn`, `#error`, `#fatal`, `#unknown`.  These
+  # methods also accept a block instead of a string, and will call it only if
+  # it needs to (in particular, if message level is greater than logger's
+  # severity level).
+  #
+  # By default, severity level is `DEBUG`, but you can set this threshold with
+  # the `LOG_LEVEL` environment variable.
+  #
+  # You can mix these methods with `#log` or `#<<`, but messages logged with
+  # `#log` will behave like messages with `DEBUG` level.  This means you will
+  # see them *only* if severity level is set to `DEBUG`.
+  #
   module Standard
     def self.load!
       # Overwrite methods on Device and Logger classes
