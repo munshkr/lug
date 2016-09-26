@@ -36,12 +36,12 @@ Performance comparison between Ruby's Logger class and Lug logger classes.
 `TtyLogger` colorizes output and calculates elapsed time between lines.
 
 ```
-                           user     system      total        real
-Logger#debug           1.340000   0.190000   1.530000 (  1.537950)
-Lug::Logger#log        0.680000   0.030000   0.710000 (  0.713254)
-Lug::TtyLogger#log     0.690000   0.030000   0.720000 (  0.713585)
-Lug::Logger#debug      0.850000   0.040000   0.890000 (  0.885118)
-Lug::TtyLogger#debug   0.880000   0.020000   0.900000 (  0.890095)
+                                    user     system      total        real
+Logger#debug                    2.720000   0.430000   3.150000 (  3.144094)
+Lug::Logger#log                 1.470000   0.050000   1.520000 (  1.521829)
+Lug::Logger#log + TtyDevice     1.480000   0.040000   1.520000 (  1.522490)
+Lug::Logger#debug               1.740000   0.050000   1.790000 (  1.785965)
+Lug::Logger#debug + TtyDevice   1.740000   0.040000   1.780000 (  1.781318)
 ```
 
 ## Development

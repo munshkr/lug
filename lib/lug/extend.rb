@@ -2,12 +2,6 @@
 
 module Lug
   module Extend
-    def self.load!
-      ::Object.include Object
-      ::Class.include Class
-      true
-    end
-
     module Object
       def logger
         defined?(LUG) && LUG
@@ -44,5 +38,8 @@ module Lug
       end
     end
   end
+
+  Object.include Extend::Object
+  Class.include  Extend::Class
 end
 

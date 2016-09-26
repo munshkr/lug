@@ -8,7 +8,7 @@ require 'logger'
 
 ENV['DEBUG'] = '*'
 null_io = File.open(File::NULL, 'a')
-N = 100_000
+N = 200_000
 
 Benchmark.bmbm do |x|
   logger = Logger.new(null_io)
@@ -25,8 +25,6 @@ Benchmark.bmbm do |x|
   x.report('Lug::Logger#log + TtyDevice') do
     N.times { |i| lug << i }
   end
-
-  Lug::Standard.load!
 
   lug = Lug::Device.new(null_io).on(:main)
   x.report('Lug::Logger#debug') do

@@ -5,10 +5,6 @@ module Lug
   # Standard module extends Lug classes so that it behaves similarly to
   # traditional Logger classes.
   #
-  # To use, after requiring this file, call:
-  #
-  #     Lug::Standard.load!
-  #
   # It basically adds methods for writing messages in different severity
   # levels: `#debug`, `info`, `#warn`, `#error`, `#fatal`, `#unknown`.  These
   # methods also accept a block instead of a string, and will call it only if
@@ -23,14 +19,6 @@ module Lug
   # see them *only* if severity level is set to `DEBUG`.
   #
   module Standard
-    def self.load!
-      # Overwrite methods on Device and Logger classes
-      Device.prepend Standard::DeviceMethods, Standard::LoggerDeviceMethods
-      TtyDevice.prepend Standard::TtyDeviceMethods
-      Logger.prepend Standard::LoggerMethods, Standard::LoggerDeviceMethods
-      true
-    end
-
     LEVEL_TEXT = [
       'DEBUG'.freeze,
       'INFO'.freeze,
@@ -125,4 +113,9 @@ module Lug
       end
     end
   end
+
+  # Overwrite methods on Device and Logger classes
+  Device.prepend    Standard::DeviceMethods, Standard::LoggerDeviceMethods
+  TtyDevice.prepend Standard::TtyDeviceMethods
+  Logger.prepend    Standard::LoggerMethods, Standard::LoggerDeviceMethods
 end
